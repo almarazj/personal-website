@@ -1,0 +1,28 @@
+:root {
+  --bg: #fbfbfa;
+  --fg: #17191c;
+  --muted: #5f6670;
+  --faint: #8a9099;
+  --line: #e2e4e7;
+  --soft: #f1f2f3;
+  --accent: #c2410c;
+
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  --font-serif: 'IBM Plex Serif', Georgia, 'Times New Roman', serif;
+
+  --gutter-l: max(16px, env(safe-area-inset-left));
+  --gutter-r: max(16px, env(safe-area-inset-right));
+  /* One frame for header, page and footer. */
+  --page-max: 1040px;
+}
+
+:root[data-mode='dark'] {
+  --bg: #141518;
+  --fg: #e9ebee;
+  --muted: #9ba2ac;
+  --faint: #6e757f;
+  --line: #2a2d32;
+  --soft: #1d1f23;
+  --accent: #fb8a4c;
+}
