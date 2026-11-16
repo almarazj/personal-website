@@ -37,6 +37,9 @@ Every section, and everything that points at it, uses the same hue through `--sc
 |---|---|---|
 | Experience | `#2457c5` | `#86a8ff` |
 | Education | `#2f7a4f` | `#7cc79a` |
+| Projects | `#c2410c` | `#fb8a4c` |
+
+`--ok` (`#1f8a4c` / `#4cc985`) marks live projects.
 
 ### Graphite and tty (terminal surfaces)
 
@@ -82,12 +85,12 @@ One terminal window 800px wide and centered (474px tall with its 34px header bar
 It is a Linux window: a header bar titled `<login>@ubuntu: ~` with minimize, maximize and close buttons, over translucent dark glass (blur 22px) on the plain page background; solid under `prefers-reduced-transparency`.
 The login is the profile's first name, lowercase and without accents.
 
-It opens straight on `neofetch`: the profile's initials spinning in 3D ASCII on the left and, on the right, Role, Uptime (years since `careerStart`), Stack, Based (with the visitor-side local time in the profile's `timeZone`), Education, Languages and Links, then the color swatches and "type help to look around".
+It opens straight on `neofetch`: the profile's initials spinning in 3D ASCII on the left and, on the right, Role, Uptime (years since `careerStart`), Stack, Based (with the visitor-side local time in the profile's `timeZone`), Education, Languages, Links and Packages, then the color swatches and "type help to look around".
 The build renders the same screen without the clock, so it reads as finished before JS runs.
-Stack comes from the current roles and Education from the latest degree; a Packages row joins with projects.
+Stack comes from the current roles, Education from the latest degree and Packages counts the projects.
 
 The prompt is a small bash-like shell over the site content:
-- Files: `about.md`, `.bashrc`, `experience/` and `education/`; each section adds its own directory.
+- Files: `about.md`, `.bashrc`, `experience/`, `education/` and `projects/`; each section adds its own directory.
 - Commands: `help`, `ls`, `cd`, `cat`, `open` (profile links by name), `neofetch`, `git log` and `git status` (the commit the page was built from), `history`, `clear`, `exit`, plus `pwd`, `whoami`, `date`, `echo`, `man`, `which` and `head`, `tail`, `grep`, `wc`, `sort` behind pipes.
 - Line editing: block cursor, grey suggestion from history then common commands (accept with → or End, or a tap), Tab completion with a menu that Tab cycles, ↑ ↓ filtered by what was typed, Ctrl+C, Ctrl+L, Ctrl+A, Ctrl+E, Ctrl+U, Ctrl+K; history persists in `localStorage["terminal-history"]`.
 - The art spins only while on screen and the tab is visible, and holds still under `prefers-reduced-motion`.
@@ -103,9 +106,29 @@ The terminal lists each role under `experience/`, and neofetch's Stack row is th
 ### Education
 
 Each degree, one Markdown file in `content/education/` whose body is its summary, is laid out like a work experience entry (shared `Entry` component): logo or monogram, the title in Plex Serif with the years (no months) on the same line, the school linked to its site with the place, the summary, and the thesis under a mono "Thesis" label.
-Below it, "Certs" from `content/certificates.yaml`: certificates inline, separated by middle dots, issuer in mono, newest first and then by name; a certificate with a `url` links to it.
-The "Certs" label sits in the entry's 48px logo column so both rows share one left edge.
-The terminal lists each degree and `certificates.txt` under `education/`, and neofetch's Education row is the latest degree's title.
+Below it, "Papers" from `content/publications.yaml`: each title (in its own language) links to the PDF kept in `content/papers/`, over a mono line with the language when it is not English, venue and year, the coauthors, and links to the project page and the proceedings.
+The project page of a paper lists it as a "Paper" pill before its other links.
+Then "Certs" from `content/certificates.yaml`: certificates inline, separated by middle dots, issuer in mono, newest first and then by name; a certificate with a `url` links to it.
+The "Papers" and "Certs" labels sit in the entry's 48px logo column so every row shares one left edge.
+The terminal lists each degree, `papers.txt` and `certificates.txt` under `education/`, and neofetch's Education row is the latest degree's title.
+
+### Projects
+
+One file per project in `content/projects/`: frontmatter for the card and an `order` for its place on the home (lowest first), and the body for its page.
+One grid of cover cards, as many to a row as fit at 230px minimum (four at full width, one on phones).
+Each card: a 16:9 cover (the project's `cover`, else a line drawing for its first domain in the projects color), then the year on the left and, on the right, a 6px green live dot (`.live-dot`) that sends out a 4px ripple lasting 0.5s (fast start, long fade: `cubic-bezier(0.16, 1, 0.3, 1)`), then rests 1s (only for live projects; a "Live in production" tooltip on hover and keyboard focus; still under reduced motion) and the context badge (Work, Client, Personal, Academic); the title in Plex Serif linking to `/projects/<id>`, the domains in mono with "confidential" when it applies, a 3-line summary, and up to three stack chips plus "+n".
+Above the grid, a domain filter of `.tag` choices with counts, "All" first and only domains that have projects; it is radios and CSS `:has()`, so it works without JavaScript.
+Confidential work never uses a screenshot as its cover; a diagram is fine.
+Diagrams are SVG exported from Excalidraw, kept next to their `.excalidraw` source in `content/projects/diagrams/` and served as is; screenshots are raster, converted to WebP and never shown wider than their natural size.
+
+### Project page
+
+`/projects/<id>`: "← Projects" back to the card on the home, then a mono meta line in the projects color (year, a green "Live" dot when live, the context badge, the domains), the title, the summary, and the cover shown whole instead of cropped.
+The page spans the content column like the home; only the summary and the body keep the 68ch reading measure, left-aligned.
+The cover sits centered in a bordered box across the column, shown whole and never taller than 560px, in a `<figure>` with an optional caption (`coverCaption`) under it in mono, `--muted`, as wide as the image box: the alt text says what the image shows, the caption what it means, and neither repeats the other.
+The body is the file's Markdown in the prose styles (Plex Serif 18px, 68ch measure), with the projects color for links.
+Below it: a "Confidential client work" note when it applies, the stack chips and link pills, then previous and next project cards in the home's order.
+The terminal lists each project under `projects/`, `open` goes to its page, and neofetch's Packages row counts them.
 
 ### Footer
 
@@ -117,7 +140,7 @@ On phones the row wraps and the stamp goes under the links.
 
 - Every interactive element has a visible focus ring: 2px `--accent`, offset 2px.
 - Hover-only behavior always has a keyboard and touch equivalent.
-- External links open in a new tab (`external()` in `src/lib/links.ts`), and screen readers hear "(opens in a new tab)" after the link text from a CSS rule, never shown; internal links stay in the tab.
+- External links and PDFs open in a new tab (`external()` in `src/lib/links.ts`), and screen readers hear "(opens in a new tab)" after the link text from a CSS rule, never shown; internal links stay in the tab.
 - Copy buttons fall back to "select it" when the clipboard is refused.
 
 ## Writing on the site

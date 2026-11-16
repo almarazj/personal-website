@@ -15,6 +15,7 @@ export interface NeofetchInfo {
   careerStart?: string;
   stack: string[];
   education?: string;
+  projects: number;
   links: { label: string; url: string }[];
 }
 
@@ -44,6 +45,7 @@ export function rows(info: NeofetchInfo, now: Date, withClock = false): Row[] {
     const names = info.links.map((l) => l.label.toLowerCase());
     out.push({ key: 'Links', text: names.join(' · '), html: info.links.map((l, i) => link(l.url, names[i])).join(' · ') });
   }
+  if (info.projects) out.push({ key: 'Packages', text: `${info.projects} project${info.projects === 1 ? '' : 's'}` });
   return out;
 }
 

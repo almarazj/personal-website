@@ -10,6 +10,8 @@
   /* Each section, and everything that points at it, shares one hue. */
   --c-experience: #2457c5;
   --c-education: #2f7a4f;
+  --c-projects: #c2410c;
+  --ok: #1f8a4c;
 
   /* Graphite: code and terminal accents, identical in both modes. */
   --g-acc: #ffb15c;
@@ -37,6 +39,7 @@
   --radius-control: 6px;
   --radius-card: 8px;
   --radius-panel: 12px;
+  --radius-pill: 999px;
   --section-gap: 72px;
   /* One frame for header, page and footer. */
   --page-max: 1040px;
@@ -54,6 +57,8 @@
 
   --c-experience: #86a8ff;
   --c-education: #7cc79a;
+  --c-projects: #fb8a4c;
+  --ok: #4cc985;
 
   --tty-glass: rgba(36, 39, 46, 0.55);
   --tty-edge: rgba(255, 255, 255, 0.08);

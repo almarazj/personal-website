@@ -1,0 +1,216 @@
+---
+import { getCollection } from 'astro:content';
+import { PROJECT_DOMAINS } from '../../content.config';
+import ProjectCover from './ProjectCover.astro';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const count = (d: (typeof PROJECT_DOMAINS)[number]) => projects.filter((p) => p.data.domains.includes(d)).length;
+const domains = PROJECT_DOMAINS.filter((d) => count(d) > 0);
+// Zero JS: the checked radio hides every card outside its domain.
+const filterCss = domains
+  .map((d) => `#projects:has(input[value="${d}"]:checked) .card:not([data-domains~="${d}"]){display:none}`)
+  .join('\n');
+const STACK_SHOWN = 3;
+---
+
+<section id="projects" class="section" style="--sc: var(--c-projects)">
+  <h2 class="section-label">Projects</h2>
+  {
+    domains.length > 1 && (
+      <fieldset class="filter">
+        <legend class="visually-hidden">Show projects by domain</legend>
+        {[['All', projects.length] as const, ...domains.map((d) => [d, count(d)] as const)].map(([d, n]) => (
+          <label class="tag">
+            <input class="visually-hidden" type="radio" name="project-domain" value={d} checked={d === 'All'} />
+            {d}
+            <small>{n}</small>
+          </label>
+        ))}
+      </fieldset>
+    )
+  }
+  <div class="grid">
+    {
+      projects.map(({ id, data: p }) => (
+          <article id={`proj-${id}`} class="card" data-domains={p.domains.join(' ')}>
+            <ProjectCover project={p} width={400} class="thumb" />
+            <div class="body">
+              <div class="top">
+                <span class="year">{p.year}</span>
+                <span class="marks">
+                  {p.live && (
+                    <span class="live" tabindex="0" role="img" aria-label="Live in production" data-tip="Live in production">
+                      <span class="live-dot" />
+                    </span>
+                  )}
+                  <span class="badge">{p.context}</span>
+                </span>
+              </div>
+              <h3>
+                <a href={`/projects/${id}`}>{p.title}</a>
+              </h3>
+              <p class="meta">
+                {p.domains.join(' · ')}
+                {p.confidential && ' · confidential'}
+              </p>
+              <p class="summary">{p.summary}</p>
+              {p.stack.length > 0 && (
+                <ul class="chips" aria-label="Stack">
+                  {p.stack.slice(0, STACK_SHOWN).map((s) => (
+                    <li class="chip">{s}</li>
+                  ))}
+                  {p.stack.length > STACK_SHOWN && <li class="chip">+{p.stack.length - STACK_SHOWN}</li>}
+                </ul>
+              )}
+            </div>
+          </article>
+      ))
+    }
+  </div>
+</section>
+
+<style is:inline set:html={filterCss}></style>
+
+<style>
+  .filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 0 0 18px;
+    padding: 0;
+    border: 0;
+  }
+  .filter small {
+    font: 400 11px/1 var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    color: var(--faint);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(230px, 100%), 1fr));
+    gap: 16px;
+  }
+  .card {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+  .card:hover {
+    border-color: var(--faint);
+  }
+  .card > :global(.thumb) {
+    border-bottom: 1px solid var(--line);
+  }
+  .body {
+    display: grid;
+    gap: 6px;
+    align-content: start;
+    min-width: 0;
+    padding: 12px 14px 14px;
+  }
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    min-height: 20px;
+  }
+  .year {
+    font: 400 12px/1 var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    color: var(--faint);
+  }
+  .marks {
+    display: flex;
+    align-items: center;
+    /* Room for the live ring at its widest. */
+    gap: 12px;
+  }
+  .badge {
+    padding: 1px 6px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-control);
+    font: 500 11px/1.4 var(--font-mono);
+    color: var(--muted);
+  }
+  /* Above the card's stretched link, so hover and focus reach the tooltip. */
+  .live {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 15px;
+    height: 15px;
+    margin: -4px;
+    border-radius: 50%;
+  }
+  .live::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    translate: -50% 4px;
+    padding: 4px 8px;
+    border-radius: var(--radius-control);
+    background: var(--fg);
+    color: var(--bg);
+    font: 500 11.5px/1.3 var(--font-mono);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity 0.12s,
+      translate 0.12s;
+  }
+  .live:hover::after,
+  .live:focus-visible::after {
+    opacity: 1;
+    translate: -50% 0;
+  }
+  h3 {
+    margin: 0;
+    font: 600 16px/1.35 var(--font-serif);
+  }
+  h3 a {
+    color: inherit;
+    text-decoration: none;
+  }
+  h3 a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+  .card:has(h3 a:focus-visible) {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  h3 a:focus-visible {
+    outline: none;
+  }
+  .meta {
+    margin: 0;
+    font: 400 12px/1.5 var(--font-mono);
+    color: var(--faint);
+  }
+  .summary {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+    margin: 0 0 4px;
+    font-size: 14.5px;
+    line-height: 1.5;
+    color: var(--muted);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .card,
+    .live::after {
+      transition: none;
+    }
+  }
+</style>

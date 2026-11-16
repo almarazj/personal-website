@@ -1,4 +1,4 @@
-import { defineCollection } from 'astro:content';
+import { defineCollection, reference } from 'astro:content';
 import { file, glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
@@ -80,4 +80,51 @@ const certificates = defineCollection({
   }),
 });
 
-export const collections = { profile, experience, education, certificates };
+const publications = defineCollection({
+  loader: file('content/publications.yaml'),
+  schema: z.object({
+    title: z.string(),
+    // Set when the paper is not in English; the site says so next to the title.
+    language: z.string().optional(),
+    authors: z.array(z.string()).min(1),
+    venue: z.string(),
+    year: z.number().int(),
+    // A PDF in content/papers/.
+    file: z.string().regex(/^[\w-]+\.pdf$/, 'a file name in content/papers/'),
+    proceedings: z.url().optional(),
+    project: reference('projects').optional(),
+  }),
+});
+
+export const PROJECT_CONTEXTS = ['Work', 'Client', 'Personal', 'Academic'] as const;
+export const PROJECT_DOMAINS = ['Backend', 'ML', 'DSP', 'Acoustics', 'Electronics'] as const;
+
+// One file per project; the body is the project page.
+const projects = defineCollection({
+  loader: glob({ pattern: '*.md', base: './content/projects' }),
+  schema: ({ image }) =>
+    z
+      .object({
+        title: z.string(),
+        // One or two sentences: the card shows three lines of it.
+        summary: z.string(),
+        year: z.number().int(),
+        context: z.enum(PROJECT_CONTEXTS),
+        domains: z.array(z.enum(PROJECT_DOMAINS)).min(1),
+        // Position on the home, lowest first.
+        order: z.number(),
+        live: z.boolean().default(false),
+        // Client work: never a screenshot, names or figures that identify the client; a diagram is fine.
+        confidential: z.boolean().default(false),
+        stack: z.array(z.string()).default([]),
+        links: z.array(z.object({ label: z.string(), url: z.url() })).default([]),
+        cover: image().optional(),
+        // What the image shows, for people who cannot see it.
+        coverAlt: z.string().optional(),
+        // What it means, shown under it on the project page; never a repeat of the alt text.
+        coverCaption: z.string().optional(),
+      })
+      .refine((p) => !p.cover || p.coverAlt, { message: 'a cover needs coverAlt', path: ['coverAlt'] }),
+});
+
+export const collections = { profile, experience, education, certificates, publications, projects };
