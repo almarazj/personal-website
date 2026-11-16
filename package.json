@@ -11,13 +11,17 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "lint": "astro check && eslint ."
+    "lint": "astro check && eslint .",
+    "e2e": "playwright test",
+    "check": "pnpm lint && pnpm e2e"
   },
   "dependencies": {
     "astro": "^7.4.12"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
+    "@playwright/test": "^1.65.1",
+    "@types/node": "^24.19.2",
     "eslint": "^10.15.0",
     "eslint-plugin-astro": "^3.2.1",
     "typescript": "^6.0.3",

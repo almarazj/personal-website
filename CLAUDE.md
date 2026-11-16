@@ -19,11 +19,12 @@ A simple static site done well: no backend, no admin panel; content is edited in
 - Hosting: private S3 bucket behind CloudFront (Origin Access Control).
 - Infra: one CloudFormation stack, `infra/site.yml`.
 - Deploy: CodeBuild on every push to `main`, through a CodeConnections GitHub connection (IAM OIDC providers are blocked by the project SCPs).
-- CI: GitHub Actions lints and builds every pull request, and lints the template with cfn-lint.
+- CI: GitHub Actions lints, builds and runs the E2E suite on every pull request, and lints the template with cfn-lint.
 
 ## Commands
 
-- `pnpm dev`, `pnpm lint` (astro check + eslint), `pnpm build`.
+- `pnpm dev`, `pnpm lint` (astro check + eslint), `pnpm build`, `pnpm e2e` (Playwright against the built site), `pnpm check` (lint + e2e).
+- E2E tests check structure and behavior, never personal content, so `content/` can change without touching tests.
 - Infra changes are applied by hand, never from CI:
   `aws cloudformation deploy --stack-name personal-website --template-file infra/site.yml --capabilities CAPABILITY_IAM --parameter-overrides ConnectionArn=<arn> Repository=almarazj/personal-website`
 - The GitHub connection was created once with `aws codeconnections create-connection` and authorized in the console.
