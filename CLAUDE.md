@@ -26,8 +26,11 @@ A simple static site done well: no backend, no admin panel; content is edited in
 - `pnpm dev`, `pnpm lint` (astro check + eslint), `pnpm build`, `pnpm test` (Vitest for logic), `pnpm e2e` (Playwright against the built site), `pnpm check` (all three).
 - Tests check structure and behavior, never personal content (unit tests use a made-up profile), so `content/` can change without touching tests.
 - Infra changes are applied by hand, never from CI:
-  `aws cloudformation deploy --stack-name personal-website --template-file infra/site.yml --capabilities CAPABILITY_IAM --parameter-overrides ConnectionArn=<arn> Repository=almarazj/personal-website`
+  `aws cloudformation deploy --stack-name personal-website --template-file infra/site.yml --capabilities CAPABILITY_IAM --parameter-overrides ConnectionArn=<arn> Repository=almarazj/personal-website DomainName=juanalmaraz.dev CertificateArn=<arn>`
 - The GitHub connection was created once with `aws codeconnections create-connection` and authorized in the console.
+- CloudFront only reads certificates from `us-east-1`, where this account allows ACM but not CloudFormation, so the certificate lives outside the stack.
+  It was requested once with `aws acm request-certificate --region us-east-1 --domain-name juanalmaraz.dev --subject-alternative-names www.juanalmaraz.dev --validation-method DNS`; ACM renews it on its own while its validation CNAMEs stay in Cloudflare.
+- DNS is on Cloudflare: the apex and `www` are CNAMEs to the distribution with the proxy off, so CloudFront terminates TLS.
 
 ## Constraints
 
