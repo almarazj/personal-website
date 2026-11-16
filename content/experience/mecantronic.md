@@ -2,7 +2,7 @@
 role: Backend Engineer
 org: Mecantronic
 url: https://mecantronic.com.ar/
-logo: ./logos/mecantronic.png
+logo: ../logos/mecantronic.png
 start: 2025-03
 place: Buenos Aires, AR
 stack: [Python, FastAPI, PostgreSQL, Docker, AWS]

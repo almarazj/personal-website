@@ -9,6 +9,7 @@
 
   /* Each section, and everything that points at it, shares one hue. */
   --c-experience: #2457c5;
+  --c-education: #2f7a4f;
 
   /* Graphite: code and terminal accents, identical in both modes. */
   --g-acc: #ffb15c;
@@ -52,6 +53,7 @@
   --accent: #fb8a4c;
 
   --c-experience: #86a8ff;
+  --c-education: #7cc79a;
 
   --tty-glass: rgba(36, 39, 46, 0.55);
   --tty-edge: rgba(255, 255, 255, 0.08);

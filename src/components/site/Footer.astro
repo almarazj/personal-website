@@ -1,6 +1,7 @@
 ---
 import { getEntry } from 'astro:content';
 import { commit as sha, repoUrl as repo } from '../../lib/build';
+import { external } from '../../lib/links';
 
 const profile = await getEntry('profile', 'profile');
 const { name, links } = profile!.data;
@@ -9,10 +10,10 @@ const { name, links } = profile!.data;
 <footer class="page site-footer">
   <p>
     {`© ${new Date().getFullYear()} ${name}`}
-    {links.map(({ label, url }) => <> · <a href={url}>{label}</a></>)}
+    {links.map(({ label, url }) => <> · <a href={url} {...external(url)}>{label}</a></>)}
   </p>
   <p class="end">
-    {sha && <a class="stamp" href={`${repo}/commit/${sha}`} title="Commit this page was built from">{sha.slice(0, 7)}</a>}
+    {sha && <a class="stamp" href={`${repo}/commit/${sha}`} {...external(repo)} title="Commit this page was built from">{sha.slice(0, 7)}</a>}
     <a href="#top">↑ back to top</a>
   </p>
 </footer>

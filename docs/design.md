@@ -36,6 +36,7 @@ Every section, and everything that points at it, uses the same hue through `--sc
 | Section | Light | Dark |
 |---|---|---|
 | Experience | `#2457c5` | `#86a8ff` |
+| Education | `#2f7a4f` | `#7cc79a` |
 
 ### Graphite and tty (terminal surfaces)
 
@@ -81,12 +82,12 @@ One terminal window 800px wide and centered (474px tall with its 34px header bar
 It is a Linux window: a header bar titled `<login>@ubuntu: ~` with minimize, maximize and close buttons, over translucent dark glass (blur 22px) on the plain page background; solid under `prefers-reduced-transparency`.
 The login is the profile's first name, lowercase and without accents.
 
-It opens straight on `neofetch`: the profile's initials spinning in 3D ASCII on the left and, on the right, Role, Uptime (years since `careerStart`), Stack, Based (with the visitor-side local time in the profile's `timeZone`), Languages and Links, then the color swatches and "type help to look around".
+It opens straight on `neofetch`: the profile's initials spinning in 3D ASCII on the left and, on the right, Role, Uptime (years since `careerStart`), Stack, Based (with the visitor-side local time in the profile's `timeZone`), Education, Languages and Links, then the color swatches and "type help to look around".
 The build renders the same screen without the clock, so it reads as finished before JS runs.
-Stack comes from the current roles; rows for education and projects join as those sections arrive.
+Stack comes from the current roles and Education from the latest degree; a Packages row joins with projects.
 
 The prompt is a small bash-like shell over the site content:
-- Files: `about.md`, `.bashrc` and `experience/`; each section adds its own directory.
+- Files: `about.md`, `.bashrc`, `experience/` and `education/`; each section adds its own directory.
 - Commands: `help`, `ls`, `cd`, `cat`, `open` (profile links by name), `neofetch`, `git log` and `git status` (the commit the page was built from), `history`, `clear`, `exit`, plus `pwd`, `whoami`, `date`, `echo`, `man`, `which` and `head`, `tail`, `grep`, `wc`, `sort` behind pipes.
 - Line editing: block cursor, grey suggestion from history then common commands (accept with → or End, or a tap), Tab completion with a menu that Tab cycles, ↑ ↓ filtered by what was typed, Ctrl+C, Ctrl+L, Ctrl+A, Ctrl+E, Ctrl+U, Ctrl+K; history persists in `localStorage["terminal-history"]`.
 - The art spins only while on screen and the tab is visible, and holds still under `prefers-reduced-motion`.
@@ -99,6 +100,13 @@ One entry per role, without a frame, separated by hairlines: a 48px logo with a 
 Current roles come first, longest-running first, then past roles by most recent end; there is no manual order.
 The terminal lists each role under `experience/`, and neofetch's Stack row is the current roles' stacks.
 
+### Education
+
+Each degree, one Markdown file in `content/education/` whose body is its summary, is laid out like a work experience entry (shared `Entry` component): logo or monogram, the title in Plex Serif with the years (no months) on the same line, the school linked to its site with the place, the summary, and the thesis under a mono "Thesis" label.
+Below it, "Certs" from `content/certificates.yaml`: certificates inline, separated by middle dots, issuer in mono, newest first and then by name; a certificate with a `url` links to it.
+The "Certs" label sits in the entry's 48px logo column so both rows share one left edge.
+The terminal lists each degree and `certificates.txt` under `education/`, and neofetch's Education row is the latest degree's title.
+
 ### Footer
 
 One row on the page frame, below a 1px `--line` rule and 72px after the content: "© year name" and the profile links, separated by middle dots, on the left.
@@ -109,6 +117,7 @@ On phones the row wraps and the stamp goes under the links.
 
 - Every interactive element has a visible focus ring: 2px `--accent`, offset 2px.
 - Hover-only behavior always has a keyboard and touch equivalent.
+- External links open in a new tab (`external()` in `src/lib/links.ts`), and screen readers hear "(opens in a new tab)" after the link text from a CSS rule, never shown; internal links stay in the tab.
 - Copy buttons fall back to "select it" when the clipboard is refused.
 
 ## Writing on the site

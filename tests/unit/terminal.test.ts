@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { byRecency, currentStack, monogram, monthLabel } from '../../src/components/home/experience';
+import { byRecency, currentStack, monogram, monthLabel } from '../../src/components/home/entries';
 import { candidates, COMMANDS, type Env, run, toHTML } from '../../src/components/home/terminal/commands';
 import { terminalData } from '../../src/components/home/terminal/data';
 import { closest, commonPrefix, completionTarget, stepHistory, suggest, tokenize } from '../../src/components/home/terminal/editor';
@@ -25,7 +25,15 @@ const experience = [
   { id: 'acme', body: 'Builds APIs.\n\n- Shipped <payments>.', data: { role: 'Backend Engineer', org: 'Acme', start: '2024-04', place: 'Lima, PE', stack: ['Python', 'AWS'] } },
   { id: 'lab', body: 'Runs the lab.', data: { role: 'Lab Assistant', org: 'Tech School', start: '2025-01', place: 'Lima, PE', stack: ['Python', 'C'] } },
 ];
-const content = { profile, experience };
+const education = [
+  { id: 'cs', body: 'A degree.', data: { title: 'B.Sc. in Computer Science', school: 'Big State University', start: '2016-03', end: '2020-12', thesis: 'On <queues>.' } },
+];
+const certificates = [
+  { data: { name: 'Old Cert', issuer: 'Acme', year: 2021 } },
+  { data: { name: 'Spanish', issuer: 'DELE', year: 2025 } },
+  { data: { name: 'English', issuer: 'EF SET', year: 2025 } },
+];
+const content = { profile, experience, education, certificates };
 const COMMIT = 'abc1234def5678abc1234def5678abc1234def56';
 const NOW = new Date(Date.UTC(2026, 10, 12, 14, 14));
 
@@ -80,12 +88,13 @@ describe('neofetch', () => {
       ['Uptime', '2+ years in software engineering'],
       ['Stack', 'Python, AWS, C'],
       ['Based', 'Lima, PE · 09:14 (GMT-5)'],
+      ['Education', 'B.Sc. in Computer Science'],
       ['Languages', 'Spanish, English'],
       ['Links', 'github · linkedin'],
     ]);
   });
   it('leaves out the clock at build time and rows without data', () => {
-    const r = rows({ ...info, languages: undefined, careerStart: undefined, stack: [], links: [] }, NOW);
+    const r = rows({ ...info, languages: undefined, careerStart: undefined, stack: [], education: undefined, links: [] }, NOW);
     expect(r.map((x) => [x.key, x.text])).toEqual([['Role', 'Backend Engineer'], ['Based', 'Lima, PE']]);
   });
   it('says under a year for a new career', () => {
@@ -166,7 +175,7 @@ describe('commands', () => {
   });
   it('ls, cd and pwd walk the content as files under the login home', () => {
     const { env } = makeEnv();
-    expect(run('ls', env).text).toBe('about.md\nexperience');
+    expect(run('ls', env).text).toBe('about.md\neducation\nexperience');
     expect(run('ls -a', env).text).toContain('.bashrc');
     expect(run('ls -l', env).text).toContain('ana ana');
     expect(run('pwd', env).text).toBe('/home/ana');
@@ -180,6 +189,14 @@ describe('commands', () => {
     run('open experience/acme.md', env);
     run('open experience', env);
     expect(opened).toEqual(['/#exp-acme', '/#experience']);
+  });
+  it('education/ holds each degree and the certificates, newest first', () => {
+    const { env, opened } = makeEnv();
+    expect(run('ls education', env).text).toBe('certificates.txt\ncs.md');
+    expect(run('cat education/cs.md', env).text).toBe('# B.Sc. in Computer Science\nBig State University · 2016-03 to 2020-12\n\nA degree.\n\nThesis: On <queues>.');
+    expect(run('cat education/certificates.txt', env).text!.split('\n').map((l) => l.split(/\s{2,}/)[0])).toEqual(['English', 'Spanish', 'Old Cert']);
+    run('open education/certificates.txt', env);
+    expect(opened).toEqual(['/#edu-certs']);
   });
   it('cat prints content escaped and linkified', () => {
     const { env } = makeEnv();
@@ -218,7 +235,7 @@ describe('commands', () => {
     const { env } = makeEnv();
     const values = (words: string[], cur: string) => candidates(env, words, cur).map((c) => c.value).filter((v) => v.startsWith(cur));
     expect(values(['cat', 'ab'], 'ab')).toEqual(['about.md']);
-    expect(values(['cd', 'e'], 'e')).toEqual(['experience/']);
+    expect(values(['cd', 'e'], 'e')).toEqual(['education/', 'experience/']);
     expect(values(['open', 'g'], 'g')).toEqual(['github']);
     expect(values(['m'], 'm')).toEqual(['man']);
     expect(values(['m'], 'm')).not.toContain('mv');

@@ -1,5 +1,6 @@
 ---
 import { getEntry } from 'astro:content';
+import Education from '../components/home/Education.astro';
 import Experience from '../components/home/Experience.astro';
 import Hero from '../components/home/Hero.astro';
 import Base from '../layouts/Base.astro';
@@ -11,5 +12,6 @@ const { name, role, description } = (await getEntry('profile', 'profile'))!.data
   <main class="page">
     <Hero />
     <Experience />
+    <Education />
   </main>
 </Base>

@@ -14,6 +14,7 @@ export interface NeofetchInfo {
   /** YYYY-MM of the first software role. */
   careerStart?: string;
   stack: string[];
+  education?: string;
   links: { label: string; url: string }[];
 }
 
@@ -37,6 +38,7 @@ export function rows(info: NeofetchInfo, now: Date, withClock = false): Row[] {
   if (info.stack.length) out.push({ key: 'Stack', text: info.stack.join(', ') });
   const clock = withClock ? ` · ${localTime(now, info.timeZone)} (${zoneLabel(now, info.timeZone)})` : '';
   out.push({ key: 'Based', text: info.location + clock });
+  if (info.education) out.push({ key: 'Education', text: info.education });
   if (info.languages) out.push({ key: 'Languages', text: info.languages });
   if (info.links.length) {
     const names = info.links.map((l) => l.label.toLowerCase());

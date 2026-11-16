@@ -436,6 +436,7 @@ function pathCandidates(env: Env, cur: string, dirsOnly: boolean): Candidate[] {
   if (!r || r.node.t !== 'd') return [];
   return Object.entries(r.node.c)
     .filter(([n, node]) => (!dirsOnly || node.t === 'd') && (base.startsWith('.') || !n.startsWith('.')))
+    .sort(([a], [b]) => a.localeCompare(b))
     .map(([n, node]) => {
       const dir = node.t === 'd';
       return { value: dirPart + n + (dir ? '/' : ''), label: n + (dir ? '/' : ''), dir };

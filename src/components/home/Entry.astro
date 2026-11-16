@@ -1,6 +1,7 @@
 ---
 import type { ImageMetadata } from 'astro';
 import { Image } from 'astro:assets';
+import { external } from '../../lib/links';
 
 /** One role: logo, serif title with its period on the same line, the organization, then the details. */
 interface Props {
@@ -35,7 +36,7 @@ const { id, logo, monogram, title, period, org, url, place, mode, meta, stack = 
       <p class="period">{period}</p>
     </div>
     <p class="org">
-      {url ? <a href={url}>{org}</a> : org}
+      {url ? <a href={url} {...external(url)}>{org}</a> : org}
       {place && ` · ${place}`}
       {mode && ` · ${mode}`}
     </p>
