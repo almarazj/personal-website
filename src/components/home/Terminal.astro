@@ -1,0 +1,274 @@
+---
+import { promptHTML } from './terminal/commands';
+import type { TerminalData } from './terminal/data';
+import { HOST, neofetchHTML } from './terminal/neofetch';
+import { frame, REST_ANGLE } from './terminal/spinner';
+
+interface Props {
+  data: TerminalData;
+}
+const { data } = Astro.props;
+const { user, initials } = data.info;
+// Without JS (or before it runs) neofetch still reads as a finished screen.
+const prompt = promptHTML(user, []);
+const screen = `<div class="echo">${prompt}neofetch</div><div class="blk">${neofetchHTML(data.info, new Date(), frame(initials, REST_ANGLE))}</div>`;
+const json = JSON.stringify(data).replace(/</g, '\\u003c');
+---
+
+<div class="term" data-terminal>
+  <div class="hb" aria-hidden="true">
+    <span>{`${user}@${HOST}: ~`}</span>
+    <span class="btns">
+      <span><svg viewBox="0 0 8 8"><path d="M1 4h6"></path></svg></span>
+      <span><svg viewBox="0 0 8 8"><rect x="1.2" y="1.2" width="5.6" height="5.6"></rect></svg></span>
+      <span><svg viewBox="0 0 8 8"><path d="M1.5 1.5l5 5M6.5 1.5l-5 5"></path></svg></span>
+    </span>
+  </div>
+  <div class="sb" data-sb>
+    <div class="out" data-out role="log" set:html={screen} />
+    <div class="line">
+      <span data-ps set:html={prompt} /><span data-view><span class="cur g">h</span><span class="sug">elp</span></span>
+      <input
+        class="in"
+        data-in
+        type="text"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+        enterkeyhint="go"
+        aria-label="Terminal command, type help to list commands"
+      />
+    </div>
+    <div class="menu" data-menu hidden></div>
+  </div>
+  <script type="application/json" data-terminal-data set:html={json} />
+</div>
+
+<script>
+  import { initTerminal } from './terminal/shell';
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-terminal]')) initTerminal(root);
+</script>
+
+<!-- Output is built as HTML strings at runtime, so these rules cannot be scoped. -->
+<style is:global>
+  .term {
+    --t-bg: var(--tty-bg);
+    --t-fg: var(--tty-fg);
+    --t-dim: var(--tty-dim);
+    --t-acc: var(--g-acc);
+    --t-ok: var(--g-ok);
+    --t-info: var(--g-info);
+    --t-err: var(--tty-err);
+    --t-mag: var(--tty-mag);
+    --t-cyan: var(--tty-cyan);
+    --t-sel: var(--tty-sel);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    max-width: var(--hero-term-width);
+    height: 474px;
+    margin-inline: auto;
+    overflow: hidden;
+    border-radius: var(--radius-panel);
+    background: var(--tty-glass);
+    -webkit-backdrop-filter: blur(22px) saturate(150%);
+    backdrop-filter: blur(22px) saturate(150%);
+    box-shadow: inset 0 0 0 1px var(--tty-edge), var(--tty-shadow);
+    color: var(--t-fg);
+    font: 400 13.5px/1.6 var(--font-mono);
+    cursor: text;
+  }
+  .term:has(.in:focus-visible) {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .term {
+      background: var(--t-bg);
+    }
+  }
+  /* A GNOME-style header bar; the buttons are decoration. */
+  .term .hb {
+    position: relative;
+    flex: none;
+    display: grid;
+    place-items: center;
+    height: 34px;
+    background: rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    font: 600 12.5px/1 var(--font-sans);
+    color: color-mix(in srgb, var(--t-fg) 85%, transparent);
+    cursor: default;
+    user-select: none;
+  }
+  .term .btns {
+    position: absolute;
+    inset: 0 12px 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .term .btns span {
+    display: grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+  }
+  .term .btns svg {
+    width: 8px;
+    height: 8px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+  }
+  .term .sb {
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden auto;
+    padding: 18px 22px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--t-sel) transparent;
+    transition: background-color 120ms;
+  }
+  .term.bell .sb {
+    background: color-mix(in srgb, var(--t-fg) 7%, transparent);
+  }
+  .term .blk,
+  .term .echo,
+  .term .line {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .term .line {
+    position: relative;
+  }
+  /* The real input only collects keys; the line is drawn by [data-view]. */
+  .term .in {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    opacity: 0;
+    font-size: 16px;
+    pointer-events: none;
+  }
+  .term .cur {
+    --cc: var(--t-fg);
+  }
+  .term .cur.g {
+    --cc: var(--t-dim);
+    color: var(--t-dim);
+  }
+  .term.focus .cur {
+    background: var(--g-acc);
+    color: var(--t-bg);
+    animation: term-blink 1.1s steps(1) infinite;
+  }
+  .term:not(.focus) .cur {
+    box-shadow: inset 0 0 0 1px var(--t-dim);
+  }
+  @keyframes term-blink {
+    50% {
+      background: transparent;
+      color: var(--cc);
+    }
+  }
+  .term .sug {
+    color: var(--t-dim);
+    cursor: pointer;
+  }
+  .term .menu {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(18ch, 1fr));
+    column-gap: 2ch;
+    white-space: pre;
+  }
+  .term .menu span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .term .menu .sel {
+    background: var(--t-sel);
+  }
+  .term a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+    text-underline-offset: 2px;
+  }
+  .term a:hover {
+    text-decoration-color: currentColor;
+  }
+  .term a:focus-visible {
+    outline: 2px solid var(--g-acc);
+    outline-offset: 1px;
+  }
+  .term .c-dim { color: var(--t-dim); }
+  .term .c-acc { color: var(--t-acc); }
+  .term .c-ok { color: var(--t-ok); }
+  .term .c-info { color: var(--t-info); }
+  .term .c-err { color: var(--t-err); }
+  .term .c-mag { color: var(--t-mag); }
+  .term .c-cyan { color: var(--t-cyan); }
+  .term .b { font-weight: 600; }
+  .term .nf {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 4ch;
+    padding-block: 4px;
+    white-space: normal;
+  }
+  .term .nf-art {
+    width: 32ch;
+    color: var(--t-acc);
+    font-weight: 600;
+    line-height: 1.12;
+    white-space: pre;
+  }
+  .term .nf-info {
+    align-self: center;
+    min-width: 0;
+    white-space: pre-wrap;
+  }
+  .term .sw {
+    display: inline-block;
+    width: 3ch;
+    height: 1.1em;
+    vertical-align: -0.2em;
+  }
+  .term .sw-dim { background: var(--t-dim); }
+  .term .sw-err { background: var(--t-err); }
+  .term .sw-ok { background: var(--t-ok); }
+  .term .sw-acc { background: var(--t-acc); }
+  .term .sw-info { background: var(--t-info); }
+  .term .sw-mag { background: var(--t-mag); }
+  .term .sw-cyan { background: var(--t-cyan); }
+  .term .sw-fg { background: var(--t-fg); }
+  @media (max-width: 680px) {
+    /* Tall enough for neofetch on a typical phone, never taller than the screen. */
+    .term {
+      height: min(634px, 85svh);
+      font-size: 12.5px;
+    }
+    .term .sb {
+      padding: 14px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .term.focus .cur {
+      animation: none;
+    }
+    .term .sb {
+      transition: none;
+    }
+  }
+</style>
