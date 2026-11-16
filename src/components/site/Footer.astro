@@ -8,28 +8,36 @@ const { name, links } = profile!.data;
 ---
 
 <footer class="page site-footer">
-  <p>
-    {`© ${new Date().getFullYear()} ${name}`}
-    {links.map(({ label, url }) => <> · <a href={url} {...external(url)}>{label}</a></>)}
-  </p>
-  <p class="end">
+  <div class="row">
+    <p>
+      {`© ${new Date().getFullYear()} ${name}`}
+      {links.map(({ label, url }) => <> · <a href={url} {...external(url)}>{label}</a></>)}
+    </p>
     {sha && <a class="stamp" href={`${repo}/commit/${sha}`} {...external(repo)} title="Commit this page was built from">{sha.slice(0, 7)}</a>}
+  </div>
+  <div class="row hints">
+    <p class="keys" aria-hidden="true"><kbd>/</kbd> search <kbd>j</kbd> <kbd>k</kbd> sections <kbd>t</kbd> theme <kbd>g</kbd> <kbd>g</kbd> top</p>
     <a href="#top">↑ back to top</a>
-  </p>
+  </div>
 </footer>
 
 <style>
   .site-footer {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px 24px;
     margin-top: var(--section-gap);
     padding-block: 24px;
     border-top: 1px solid var(--line);
     font-size: 13px;
     color: var(--muted);
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px 24px;
+  }
+  .row + .row {
+    margin-top: 8px;
   }
   p {
     margin: 0;
@@ -40,11 +48,6 @@ const { name, links } = profile!.data;
   a:hover {
     color: var(--fg);
   }
-  .end {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
   .stamp {
     padding: 2px 8px;
     border: 1px solid var(--line);
@@ -52,5 +55,21 @@ const { name, links } = profile!.data;
     font: 400 11.5px/1.4 var(--font-mono);
     font-variant-numeric: tabular-nums;
     text-decoration: none;
+  }
+  .hints {
+    font: 400 12px/1.6 var(--font-mono);
+    color: var(--faint);
+  }
+  kbd {
+    font: inherit;
+    padding: 0 4px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+  }
+  /* Keyboard shortcuts mean nothing on touch screens. */
+  @media (hover: none) {
+    .keys {
+      display: none;
+    }
   }
 </style>

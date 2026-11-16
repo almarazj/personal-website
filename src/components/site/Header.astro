@@ -8,7 +8,11 @@ const profile = await getEntry('profile', 'profile');
 <header class="site-header" data-header>
   <div class="page bar">
     <a class="name" href="/">{profile?.data.name}</a>
-    <ThemeToggle />
+    <button type="button" class="search" data-palette-open aria-label="Search or jump to">
+      <span>Search or jump to...</span><kbd>/</kbd>
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
+    </button>
+    <div class="right"><ThemeToggle /></div>
   </div>
 </header>
 
@@ -34,12 +38,62 @@ const profile = await getEntry('profile', 'profile');
       background: var(--bg);
     }
   }
+  /* Name, search and toggle; the outer columns share the rest so the search stays centered. */
   .bar {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
-    justify-content: space-between;
     gap: 16px;
     height: 56px;
+  }
+  .search {
+    display: flex;
+    min-width: 0;
+    justify-content: space-between;
+    gap: 24px;
+    width: min(360px, 40vw);
+    padding: 8px 12px;
+    font: 400 13px/1 var(--font-mono);
+    color: var(--muted);
+    background: var(--soft);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-control);
+    cursor: pointer;
+  }
+  .search:hover {
+    border-color: var(--faint);
+  }
+  .search kbd {
+    font: inherit;
+    color: var(--faint);
+  }
+  .icon {
+    display: none;
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+  }
+  .right {
+    justify-self: end;
+  }
+  @media (max-width: 680px) {
+    .bar {
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 8px;
+    }
+    .search {
+      width: auto;
+      padding: 7px 9px;
+    }
+    .search span,
+    .search kbd {
+      display: none;
+    }
+    .search .icon {
+      display: block;
+    }
   }
   .name {
     font: 600 18px/1 var(--font-serif);
@@ -50,10 +104,12 @@ const profile = await getEntry('profile', 'profile');
 </style>
 
 <script>
-  // The border appears once the hero has scrolled under the header, or right away on pages without one.
+  // The border appears once the hero has scrolled away, or right away on pages without one. "Away" includes a jump to the
+  // first section, which stops at its 72px scroll margin and leaves the hero's last pixels just below the header.
+  const STUCK_AT = 120;
   const header = document.querySelector<HTMLElement>('[data-header]')!;
   const hero = document.getElementById('hero');
-  const update = () => header.toggleAttribute('data-stuck', !hero || hero.getBoundingClientRect().bottom < header.offsetHeight);
+  const update = () => header.toggleAttribute('data-stuck', !hero || hero.getBoundingClientRect().bottom < STUCK_AT);
   addEventListener('scroll', update, { passive: true });
   update();
 </script>

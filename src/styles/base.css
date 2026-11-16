@@ -12,6 +12,18 @@ html[data-mode='dark'] {
   color-scheme: dark;
 }
 
+/* Anchor jumps, the palette and the shortcuts glide; under reduced motion they jump. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Anchor targets land below the sticky 56px header instead of under it. */
+[id] {
+  scroll-margin-top: 72px;
+}
+
 body {
   margin: 0;
   padding-inline: var(--gutter-l) var(--gutter-r);
