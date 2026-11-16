@@ -5,6 +5,7 @@ import Terminal from './Terminal.astro';
 import { terminalData } from './terminal/data';
 
 const profile = (await getEntry('profile', 'profile'))!.data;
+const bio = (await getEntry('about', 'about'))?.body;
 const [experience, education, certificates, publications, projects] = await Promise.all([
   getCollection('experience'),
   getCollection('education'),
@@ -16,7 +17,7 @@ const [experience, education, certificates, publications, projects] = await Prom
 
 <section id="hero" class="hero">
   <h1 class="visually-hidden">{profile.name}</h1>
-  <Terminal data={terminalData({ profile, experience, education, certificates, publications, projects }, commit)} />
+  <Terminal data={terminalData({ profile, experience, education, certificates, publications, projects, bio }, commit)} />
 </section>
 
 <style>

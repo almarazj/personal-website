@@ -38,6 +38,7 @@ Every section, and everything that points at it, uses the same hue through `--sc
 | Experience | `#2457c5` | `#86a8ff` |
 | Education | `#2f7a4f` | `#7cc79a` |
 | Projects | `#c2410c` | `#fb8a4c` |
+| About | `#b4366f` | `#f07aae` |
 
 `--ok` (`#1f8a4c` / `#4cc985`) marks live projects.
 
@@ -130,6 +131,15 @@ The body is the file's Markdown in the prose styles (Plex Serif 18px, 68ch measu
 Below it: a "Confidential client work" note when it applies, the stack chips and link pills, then previous and next project cards in the home's order.
 The terminal lists each project under `projects/`, `open` goes to its page, and neofetch's Packages row counts them.
 
+### About
+
+From `content/about.md`: the body is the bio, a 68ch paragraph; the frontmatter lists the photos and the quick questions.
+Left of the bio (above it on phones), the photos as a stack of polaroids 400px wide (narrower on small phones), the first on top: drag the top one away (over 90px) to send it to the back, or tap it, press Enter or the arrow keys, or use "Next photo"; a counter shows "1 / n" and screen readers hear each new photo's caption and alt text.
+Photos are square, in `content/about/`, with any camera metadata (GPS) stripped before they are committed; the caption is two to four words and the alt text describes the place.
+Below it, "Quick questions" as rows separated by hairlines: the question in mono on the left (200px), the answer in Plex Serif 19px with a 20px stroke icon in its color, and a muted detail line with an optional link.
+The icon is one of a fixed set (book, book-open, film, music, flag, ball), checked by the schema.
+The terminal's `about.md` carries the bio and opens the section.
+
 ### Footer
 
 One row on the page frame, below a 1px `--line` rule and 72px after the content: "© year name" and the profile links, separated by middle dots, on the left.
@@ -140,7 +150,7 @@ On phones the row wraps and the stamp goes under the links.
 
 - Every interactive element has a visible focus ring: 2px `--accent`, offset 2px.
 - Hover-only behavior always has a keyboard and touch equivalent.
-- External links and PDFs open in a new tab (`external()` in `src/lib/links.ts`), and screen readers hear "(opens in a new tab)" after the link text from a CSS rule, never shown; internal links stay in the tab.
+- External links and PDFs open in a new tab (`external()` in `src/lib/links.ts`, and a Markdown plugin for links in content), and screen readers hear "(opens in a new tab)" after the link text from a CSS rule, never shown; internal links stay in the tab.
 - Copy buttons fall back to "select it" when the clipboard is refused.
 
 ## Writing on the site

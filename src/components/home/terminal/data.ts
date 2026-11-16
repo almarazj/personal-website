@@ -19,6 +19,8 @@ export interface TerminalContent {
   certificates: Certificate[];
   publications: Publication[];
   projects: Project[];
+  /** The About bio, as Markdown. */
+  bio?: string;
 }
 
 /** Everything the shell needs, serialized into the page once. */
@@ -39,7 +41,7 @@ const login = (name: string) =>
 
 const md = (body: string, href?: string): FileNode => ({ t: 'f', kind: 'md', body, href });
 
-export function terminalData({ profile: p, experience, education, certificates, publications, projects }: TerminalContent, commit: string | null): TerminalData {
+export function terminalData({ profile: p, experience, education, certificates, publications, projects, bio }: TerminalContent, commit: string | null): TerminalData {
   const roles = [...experience].sort((a, b) => byRecency(a.data, b.data));
   const degrees = [...education].sort((a, b) => byRecency(a.data, b.data));
   const info: NeofetchInfo = {
@@ -96,7 +98,7 @@ export function terminalData({ profile: p, experience, education, certificates, 
     t: 'd',
     c: {
       '.bashrc': { t: 'f', kind: 'txt', body: "# ~/.bashrc\nexport EDITOR=vim\nalias ll='ls -la'\nalias la='ls -a'\nalias l='ls'\n\nneofetch" },
-      'about.md': md(`# About\n${[p.name, p.role, p.location].join(' · ')}\n\n${p.description}`),
+      'about.md': md(`# About\n${[p.name, p.role, p.location].join(' · ')}\n\n${p.description}${bio?.trim() ? `\n\n${bio.trim()}` : ''}`, '/#about'),
       experience: { t: 'd', c: Object.fromEntries(roleFiles), href: '/#experience' },
       projects: { t: 'd', c: Object.fromEntries(projectFiles), href: '/#projects' },
       education: { t: 'd', c: Object.fromEntries([...degreeFiles, ...(publications.length ? [['papers.txt', paperFile] as const] : []), ...(certs.length ? [['certificates.txt', certFile] as const] : [])]), href: '/#education' },

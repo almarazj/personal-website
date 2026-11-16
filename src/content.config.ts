@@ -96,6 +96,37 @@ const publications = defineCollection({
   }),
 });
 
+export const ANSWER_ICONS = ['book', 'book-open', 'film', 'music', 'flag', 'ball'] as const;
+
+// The body is the bio.
+const about = defineCollection({
+  loader: glob({ pattern: 'about.md', base: './content' }),
+  schema: ({ image }) => z.object({
+    photos: z
+      .array(
+        z.object({
+          image: image(),
+          // Describes the place and what is in the photo.
+          alt: z.string(),
+          // Two to four words, on the polaroid's strip.
+          caption: z.string().max(28),
+        }),
+      )
+      .default([]),
+    questions: z
+      .array(
+        z.object({
+          q: z.string(),
+          a: z.string(),
+          detail: z.string(),
+          icon: z.enum(ANSWER_ICONS),
+          link: z.url().optional(),
+        }),
+      )
+      .default([]),
+  }),
+});
+
 export const PROJECT_CONTEXTS = ['Work', 'Client', 'Personal', 'Academic'] as const;
 export const PROJECT_DOMAINS = ['Backend', 'ML', 'DSP', 'Acoustics', 'Electronics'] as const;
 
@@ -127,4 +158,4 @@ const projects = defineCollection({
       .refine((p) => !p.cover || p.coverAlt, { message: 'a cover needs coverAlt', path: ['coverAlt'] }),
 });
 
-export const collections = { profile, experience, education, certificates, publications, projects };
+export const collections = { profile, experience, education, certificates, publications, projects, about };
