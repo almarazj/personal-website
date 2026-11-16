@@ -11,6 +11,7 @@
   --c-experience: #2457c5;
   --c-education: #2f7a4f;
   --c-projects: #c2410c;
+  --c-about: #b4366f;
   --ok: #1f8a4c;
 
   /* Graphite: code and terminal accents, identical in both modes. */
@@ -58,6 +59,7 @@
   --c-experience: #86a8ff;
   --c-education: #7cc79a;
   --c-projects: #fb8a4c;
+  --c-about: #f07aae;
   --ok: #4cc985;
 
   --tty-glass: rgba(36, 39, 46, 0.55);

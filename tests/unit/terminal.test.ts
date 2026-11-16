@@ -40,7 +40,7 @@ const projects = [
 const publications = [
   { data: { title: 'Colas en la práctica', language: 'Spanish', authors: ['Ana María López', 'Bo Chen'], venue: 'Some Conference', year: 2024, file: 'queues.pdf' } },
 ];
-const content = { profile, experience, education, certificates, publications, projects };
+const content = { profile, experience, education, certificates, publications, projects, bio: 'I grew up in Lima.\n' };
 const COMMIT = 'abc1234def5678abc1234def5678abc1234def56';
 const NOW = new Date(Date.UTC(2026, 10, 12, 14, 14));
 
@@ -218,14 +218,14 @@ describe('commands', () => {
   it('cat prints content escaped and linkified', () => {
     const { env } = makeEnv();
     const res = run('cat about.md', env);
-    expect(res.text).toBe('# About\nAna María López · Backend Engineer · Lima, PE\n\nI build <APIs>. More at https://example.com/ana');
+    expect(res.text).toBe('# About\nAna María López · Backend Engineer · Lima, PE\n\nI build <APIs>. More at https://example.com/ana\n\nI grew up in Lima.');
     expect(toHTML(res)).toContain('I build &lt;APIs&gt;');
     expect(toHTML(res)).toContain('<a href="https://example.com/ana"');
   });
   it('pipes text through grep, wc and head', () => {
     const { env } = makeEnv();
-    expect(run('cat about.md | grep -c Lima', env).text).toBe('1');
-    expect(run('cat about.md | wc -l', env).text!.trim()).toBe('4');
+    expect(run('cat about.md | grep -c Lima', env).text).toBe('2');
+    expect(run('cat about.md | wc -l', env).text!.trim()).toBe('6');
     expect(run('cat .bashrc | head -n 1', env).text).toBe('# ~/.bashrc');
     expect(run('cat about.md | jq .name', env).status).toBe(127);
   });
@@ -236,11 +236,12 @@ describe('commands', () => {
     expect(res.text).toBe('catt: command not found');
     expect(res.html).toContain('did you mean cat?');
   });
-  it('open goes to the profile links by name', () => {
+  it('open goes to the profile links by name, and to a file\'s place on the page', () => {
     const { env, opened } = makeEnv();
     run('open github', env);
-    expect(opened).toEqual(['https://github.com/ana']);
-    expect(run('open about.md', env).status).toBe(1);
+    run('open about.md', env);
+    expect(opened).toEqual(['https://github.com/ana', '/#about']);
+    expect(run('open .bashrc', env).status).toBe(1);
     expect(run('open', env).text).toBe('usage: open <file | github | linkedin>');
   });
   it('git log shows the commit this page was built from, or fails without one', () => {
