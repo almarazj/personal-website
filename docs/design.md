@@ -59,6 +59,12 @@ Sticky at the top of every page: the name, linking home, on the left, and the mo
 The toggle is a bare icon with no box that names what a click switches to: a moon in light mode, a sun in dark mode.
 Its bar is light glass: the page background at 72% over a 14px blur, reaching the viewport edges; solid under `prefers-reduced-transparency`.
 
+### Footer
+
+One row on the page frame, below a 1px `--line` rule and 72px after the content: "© year name" and the profile links, separated by middle dots, on the left.
+On the right, the commit the page was built from as a mono stamp linking to it on GitHub, then "↑ back to top".
+On phones the row wraps and the stamp goes under the links.
+
 ## Interaction rules
 
 - Every interactive element has a visible focus ring: 2px `--accent`, offset 2px.

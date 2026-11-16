@@ -1,0 +1,65 @@
+---
+import { execSync } from 'node:child_process';
+import { getEntry } from 'astro:content';
+import pkg from '../../../package.json';
+
+const profile = await getEntry('profile', 'profile');
+const { name, links } = profile!.data;
+
+// Read at build time, so each deployed page names the commit it was built from.
+let sha: string | null = null;
+try {
+  sha = execSync('git rev-parse HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+} catch {
+  // no git checkout: the stamp is left out
+}
+const repo = `https://github.com/${pkg.repository.replace(/^github:/, '')}`;
+---
+
+<footer class="page site-footer">
+  <p>
+    {`© ${new Date().getFullYear()} ${name}`}
+    {links.map(({ label, url }) => <> · <a href={url}>{label}</a></>)}
+  </p>
+  <p class="end">
+    {sha && <a class="stamp" href={`${repo}/commit/${sha}`} title="Commit this page was built from">{sha.slice(0, 7)}</a>}
+    <a href="#top">↑ back to top</a>
+  </p>
+</footer>
+
+<style>
+  .site-footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px 24px;
+    margin-top: var(--section-gap);
+    padding-block: 24px;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+    color: var(--muted);
+  }
+  p {
+    margin: 0;
+  }
+  a {
+    color: var(--muted);
+  }
+  a:hover {
+    color: var(--fg);
+  }
+  .end {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .stamp {
+    padding: 2px 8px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-control);
+    font: 400 11.5px/1.4 var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    text-decoration: none;
+  }
+</style>
