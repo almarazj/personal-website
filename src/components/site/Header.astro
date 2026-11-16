@@ -1,0 +1,45 @@
+---
+import { getEntry } from 'astro:content';
+import ThemeToggle from './ThemeToggle.astro';
+
+const profile = await getEntry('profile', 'profile');
+---
+
+<header class="site-header">
+  <div class="page bar">
+    <a class="name" href="/">{profile?.data.name}</a>
+    <ThemeToggle />
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    /* The glass bleeds over the body gutters to the viewport edges; .bar keeps the content on the page frame. */
+    margin-inline: calc(-1 * var(--gutter-l)) calc(-1 * var(--gutter-r));
+    padding-inline: var(--gutter-l) var(--gutter-r);
+    background: color-mix(in srgb, var(--bg) 72%, transparent);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+    backdrop-filter: blur(14px) saturate(150%);
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .site-header {
+      background: var(--bg);
+    }
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    height: 56px;
+  }
+  .name {
+    font: 600 18px/1 var(--font-serif);
+    color: var(--fg);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+</style>

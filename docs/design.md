@@ -51,6 +51,14 @@ Use `font-variant-numeric: tabular-nums` wherever digits line up.
 - Header, page and footer share one 1040px frame (`.page`), centered in the viewport; their edges line up.
 - Breakpoints: 680px (phone), 960px (side index hides).
 
+## Components
+
+### Header
+
+Sticky at the top of every page: the name, linking home, on the left, and the mode toggle on the right, both on the page frame's edges.
+The toggle is a bare icon with no box that names what a click switches to: a moon in light mode, a sun in dark mode.
+Its bar is light glass: the page background at 72% over a 14px blur, reaching the viewport edges; solid under `prefers-reduced-transparency`.
+
 ## Interaction rules
 
 - Every interactive element has a visible focus ring: 2px `--accent`, offset 2px.
