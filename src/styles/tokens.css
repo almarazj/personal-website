@@ -7,6 +7,23 @@
   --soft: #f1f2f3;
   --accent: #c2410c;
 
+  /* Graphite: code and terminal accents, identical in both modes. */
+  --g-acc: #ffb15c;
+  --g-ok: #7fe0a8;
+  --g-info: #a9c1ff;
+
+  --tty-bg: #121316;
+  --tty-fg: #d9dce1;
+  --tty-dim: #737a83;
+  --tty-sel: #2c2f35;
+  --tty-err: #ff9d9d;
+  --tty-mag: #e2acff;
+  --tty-cyan: #8adfe6;
+  /* The hero window is translucent dark glass; it shifts with the mode. */
+  --tty-glass: rgba(20, 22, 27, 0.8);
+  --tty-edge: rgba(255, 255, 255, 0.25);
+  --tty-shadow: 0 18px 44px rgba(20, 24, 30, 0.22);
+
   --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
   --font-serif: 'IBM Plex Serif', Georgia, 'Times New Roman', serif;
@@ -14,9 +31,11 @@
   --gutter-l: max(16px, env(safe-area-inset-left));
   --gutter-r: max(16px, env(safe-area-inset-right));
   --radius-control: 6px;
+  --radius-panel: 12px;
   --section-gap: 72px;
   /* One frame for header, page and footer. */
   --page-max: 1040px;
+  --hero-term-width: 800px;
 }
 
 :root[data-mode='dark'] {
@@ -27,4 +46,8 @@
   --line: #2a2d32;
   --soft: #1d1f23;
   --accent: #fb8a4c;
+
+  --tty-glass: rgba(36, 39, 46, 0.55);
+  --tty-edge: rgba(255, 255, 255, 0.08);
+  --tty-shadow: 0 18px 44px rgba(0, 0, 0, 0.45);
 }

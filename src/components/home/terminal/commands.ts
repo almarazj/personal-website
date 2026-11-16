@@ -1,0 +1,466 @@
+import { closest, tokenize } from './editor';
+import { absPath, type DirNode, type FileNode, type FsNode, nodeSize, pathLabel, resolve } from './fs';
+import { esc, highlightJson, link, linkify, span } from './html';
+import { HOST, neofetchHTML, neofetchText, type NeofetchInfo } from './neofetch';
+import { frame, REST_ANGLE } from './spinner';
+
+/** What a command can see and touch; the shell supplies the browser-backed one. */
+export interface Env {
+  home: DirNode;
+  cwd: string[];
+  setCwd(path: string[]): void;
+  history: readonly string[];
+  status: number;
+  info: NeofetchInfo;
+  /** The commit the page was built from, if known. */
+  commit: string | null;
+  now(): Date;
+  open(href: string): void;
+  clear(): void;
+}
+
+/** `text` is what a pipe passes on; `html` and `json` only change how the last stage prints. */
+export interface Result {
+  text?: string;
+  html?: string;
+  json?: unknown;
+  status?: number;
+  exit?: boolean;
+}
+
+interface Ctx {
+  env: Env;
+  stdin?: Result;
+}
+
+interface Command {
+  summary: string;
+  hidden?: boolean;
+  run(args: string[], ctx: Ctx): Result;
+}
+
+export const toText = (r: Result | undefined): string =>
+  r == null ? '' : r.text != null ? r.text : r.json !== undefined ? JSON.stringify(r.json, null, 2) : '';
+
+export const toHTML = (r: Result): string =>
+  r.html != null ? r.html : r.json !== undefined ? highlightJson(r.json) : r.text ? linkify(esc(r.text)) : '';
+
+const p2 = (n: number) => String(n).padStart(2, '0');
+const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const clock = (d: Date) => `${p2(d.getHours())}:${p2(d.getMinutes())}:${p2(d.getSeconds())}`;
+
+// ---------- files ----------
+
+function markdownHTML(body: string): string {
+  return body
+    .split('\n')
+    .map((l, i) => {
+      if (l.startsWith('# ')) return span('c-acc b', l);
+      if (l.startsWith('## ')) return span('b', l);
+      if (i === 1 && body.startsWith('# ')) return span('c-dim', l);
+      if (l.startsWith('- ')) return span('c-dim', '-') + linkify(esc(l.slice(1)));
+      return linkify(esc(l));
+    })
+    .join('\n');
+}
+
+function readFile(node: FileNode): Result {
+  switch (node.kind) {
+    case 'md':
+      return { html: markdownHTML(node.body ?? ''), text: node.body ?? '' };
+    case 'txt':
+      return { text: node.body ?? '' };
+    case 'json':
+      return { json: node.json };
+  }
+}
+
+/** Text of a named file or of the piped input, for the filters. */
+function input(cmd: string, file: string | undefined, { env, stdin }: Ctx): { text: string } | { error: Result } {
+  if (file) {
+    const r = resolve(env.home, env.cwd, file);
+    if (!r) return { error: { text: `${cmd}: ${file}: No such file or directory`, status: 2 } };
+    if (r.node.t === 'd') return { error: { text: `${cmd}: ${file}: Is a directory`, status: 2 } };
+    return { text: toText(readFile(r.node)) };
+  }
+  if (stdin) return { text: toText(stdin) };
+  return { error: { text: `${cmd}: nothing to read, name a file or pipe something in`, status: 2 } };
+}
+
+const split = (args: string[]) => ({
+  flags: args.filter((a) => /^-[a-zA-Z]+$/.test(a)).join(''),
+  rest: args.filter((a) => !/^-[a-zA-Z]+$/.test(a)),
+});
+
+const nameHTML = (name: string, node: FsNode) => (node.t === 'd' ? span('c-info b', name) : esc(name));
+
+/** The profile links by the name `open` takes: GitHub is `github`. */
+const namedLinks = (env: Env) => Object.fromEntries(env.info.links.map((l) => [l.label.toLowerCase(), l.url]));
+
+// ---------- commands ----------
+
+const HELP: [string, string][] = [
+  ['ls [dir]', 'list files'],
+  ['cd <dir>', 'change directory'],
+  ['cat <file>', 'print a file'],
+  ['open <link>', 'open a link, like github'],
+  ['neofetch', 'who I am, at a glance'],
+  ['git log', 'the commit this page was built from'],
+  ['history', 'your past commands'],
+  ['clear', 'clear the screen'],
+];
+const ALSO = 'also: pwd, whoami, date, echo, head, tail, grep, wc, sort, man, which, exit';
+
+export const ALIASES: Record<string, string> = { ll: 'ls -la', la: 'ls -a', l: 'ls' };
+
+export const COMMANDS: Record<string, Command> = {
+  help: {
+    summary: 'list the commands',
+    run: () => ({
+      html: `${span('c-acc b', 'Commands')}\n${HELP.map(([c, d]) => `  ${esc(c.padEnd(22))}${span('c-dim', d)}`).join('\n')}\n  ${span('c-dim', ALSO)}`,
+      text: `Commands\n${HELP.map(([c, d]) => `  ${c.padEnd(22)}${d}`).join('\n')}\n  ${ALSO}`,
+    }),
+  },
+  ls: {
+    summary: 'list directory contents',
+    run(args, { env }) {
+      const { flags, rest } = split(args);
+      const long = flags.includes('l');
+      const all = flags.includes('a');
+      const targets = rest.length ? rest : ['.'];
+      const html: string[] = [];
+      const text: string[] = [];
+      let status = 0;
+      for (const t of targets) {
+        const r = resolve(env.home, env.cwd, t);
+        if (!r) {
+          const msg = `ls: cannot access '${t}': No such file or directory`;
+          html.push(esc(msg));
+          text.push(msg);
+          status = 2;
+          continue;
+        }
+        if (targets.length > 1) {
+          html.push(`${esc(t)}:`);
+          text.push(`${t}:`);
+        }
+        let entries: [string, FsNode][] =
+          r.node.t === 'd'
+            ? Object.entries(r.node.c)
+                .filter(([n]) => all || !n.startsWith('.'))
+                .sort(([a], [b]) => a.replace(/^\./, '').localeCompare(b.replace(/^\./, '')))
+            : [[t.split('/').pop() ?? t, r.node]];
+        if (all && r.node.t === 'd') entries = [['.', r.node], ['..', r.node], ...entries];
+        if (long) {
+          const d = env.now();
+          const date = `${MONTHS[d.getMonth()]} ${String(d.getDate()).padStart(2)} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
+          const owner = `${env.info.user} ${env.info.user}`;
+          html.push(`total ${entries.length * 4}`);
+          text.push(`total ${entries.length * 4}`);
+          for (const [n, node] of entries) {
+            const meta = `${node.t === 'd' ? 'drwxr-xr-x' : '-rw-r--r--'} ${owner} ${String(nodeSize(node)).padStart(6)} ${date} `;
+            html.push(span('c-dim', meta) + nameHTML(n, node));
+            text.push(meta + n);
+          }
+        } else {
+          html.push(entries.map(([n, node]) => nameHTML(n, node)).join('  '));
+          text.push(...entries.map(([n]) => n));
+        }
+      }
+      return { html: html.join('\n'), text: text.join('\n'), status };
+    },
+  },
+  cd: {
+    summary: 'change directory',
+    run(args, { env }) {
+      const t = args[0];
+      if (!t || t === '~') {
+        env.setCwd([]);
+        return {};
+      }
+      const r = resolve(env.home, env.cwd, t);
+      if (!r) return { text: `bash: cd: ${t}: No such file or directory`, status: 1 };
+      if (r.node.t !== 'd') return { text: `bash: cd: ${t}: Not a directory`, status: 1 };
+      env.setCwd(r.path);
+      return {};
+    },
+  },
+  pwd: { summary: 'print the working directory', run: (_, { env }) => ({ text: absPath(env.info.user, env.cwd) }) },
+  cat: {
+    summary: 'print files',
+    run(args, ctx) {
+      const files = split(args).rest;
+      if (!files.length) return { text: toText(ctx.stdin) };
+      const outs: Result[] = files.map((f) => {
+        const r = resolve(ctx.env.home, ctx.env.cwd, f);
+        if (!r) return { text: `cat: ${f}: No such file or directory`, status: 1 };
+        if (r.node.t === 'd') return { text: `cat: ${f}: Is a directory`, status: 1 };
+        return readFile(r.node);
+      });
+      const status = outs.reduce((s, o) => o.status || s, 0);
+      if (outs.length === 1) return { ...outs[0], status };
+      return { html: outs.map(toHTML).join('\n'), text: outs.map(toText).join('\n'), status };
+    },
+  },
+  head: {
+    summary: 'print the first lines',
+    run(args, ctx) {
+      let n = 10;
+      let file: string | undefined;
+      for (let i = 0; i < args.length; i++) {
+        if (args[i] === '-n') n = Number(args[++i]) || 10;
+        else if (/^-\d+$/.test(args[i])) n = Number(args[i].slice(1));
+        else file = args[i];
+      }
+      const r = input('head', file, ctx);
+      return 'error' in r ? r.error : { text: r.text.split('\n').slice(0, n).join('\n') };
+    },
+  },
+  tail: {
+    summary: 'print the last lines',
+    run(args, ctx) {
+      let n = 10;
+      let file: string | undefined;
+      for (let i = 0; i < args.length; i++) {
+        if (args[i] === '-n') n = Number(args[++i]) || 10;
+        else if (/^-\d+$/.test(args[i])) n = Number(args[i].slice(1));
+        else file = args[i];
+      }
+      const r = input('tail', file, ctx);
+      return 'error' in r ? r.error : { text: r.text.split('\n').slice(-n).join('\n') };
+    },
+  },
+  grep: {
+    summary: 'print matching lines',
+    run(args, ctx) {
+      const { flags, rest } = split(args);
+      if (rest[0] == null) return { text: 'usage: grep [-icv] pattern [file]', status: 2 };
+      const r = input('grep', rest[1], ctx);
+      if ('error' in r) return r.error;
+      const re = (() => {
+        const f = flags.includes('i') ? 'gi' : 'g';
+        try {
+          return new RegExp(rest[0], f);
+        } catch {
+          return new RegExp(rest[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), f);
+        }
+      })();
+      const invert = flags.includes('v');
+      const lines = r.text.split('\n').filter((l) => {
+        re.lastIndex = 0;
+        return re.test(l) !== invert;
+      });
+      if (flags.includes('c')) return { text: String(lines.length) };
+      if (!lines.length) return { text: '', status: 1 };
+      const mark = (l: string) => {
+        let out = '';
+        let last = 0;
+        for (const m of l.matchAll(re)) {
+          if (!m[0]) break;
+          out += esc(l.slice(last, m.index)) + span('c-err b', m[0]);
+          last = m.index + m[0].length;
+        }
+        return out + esc(l.slice(last));
+      };
+      return { html: lines.map((l) => (invert ? esc(l) : mark(l))).join('\n'), text: lines.join('\n') };
+    },
+  },
+  wc: {
+    summary: 'count lines, words and bytes',
+    run(args, ctx) {
+      const { flags, rest } = split(args);
+      const r = input('wc', rest[0], ctx);
+      if ('error' in r) return r.error;
+      const counts: [string, number][] = [['l', r.text.split('\n').length], ['w', r.text.split(/\s+/).filter(Boolean).length], ['c', r.text.length]];
+      const shown = flags ? counts.filter(([f]) => flags.includes(f)) : counts;
+      return { text: shown.map(([, n]) => String(n).padStart(8)).join('') + (rest[0] ? ` ${rest[0]}` : '') };
+    },
+  },
+  sort: {
+    summary: 'sort lines',
+    run(args, ctx) {
+      const { flags, rest } = split(args);
+      const r = input('sort', rest[0], ctx);
+      if ('error' in r) return r.error;
+      const lines = r.text.split('\n').sort();
+      return { text: (flags.includes('r') ? lines.reverse() : lines).join('\n') };
+    },
+  },
+  open: {
+    summary: 'open a file or link',
+    run(args, { env }) {
+      const t = args[0];
+      const links = namedLinks(env);
+      if (!t) return { text: `usage: open <file | ${Object.keys(links).join(' | ')}>`, status: 1 };
+      let href = Object.hasOwn(links, t) ? links[t] : undefined;
+      if (!href) {
+        const r = resolve(env.home, env.cwd, t);
+        if (!r) return { text: `open: ${t}: No such file or directory`, status: 1 };
+        href = r.node.href;
+        if (!href) return { text: `open: nothing to open for ${t}, try: cat ${t}`, status: 1 };
+      }
+      env.open(href);
+      return { html: `${span('c-dim', 'opening')} ${link(href, href)}`, text: href };
+    },
+  },
+  neofetch: {
+    summary: 'who I am, at a glance',
+    run(_, { env }) {
+      const now = env.now();
+      return { html: neofetchHTML(env.info, now, frame(env.info.initials, REST_ANGLE), true), text: neofetchText(env.info, now) };
+    },
+  },
+  git: {
+    summary: 'version control',
+    run(args, { env }) {
+      if (!env.commit) return { text: 'fatal: not a git repository (or any of the parent directories): .git', status: 128 };
+      if (args[0] === 'log') {
+        return {
+          html: `${span('c-acc', `commit ${env.commit}`)} ${span('c-cyan b', '(HEAD)')}\n\n    ${span('c-dim', 'the commit this page was built from')}`,
+          text: `commit ${env.commit} (HEAD)`,
+        };
+      }
+      if (args[0] === 'status') return { text: `HEAD detached at ${env.commit.slice(0, 7)}\nnothing to commit, working tree clean` };
+      if (!args[0]) return { text: 'usage: git <command>\n\nthis box knows: git log, git status' };
+      return { text: `git: '${args[0]}' is not a git command. See 'git --help'.`, status: 1 };
+    },
+  },
+  history: {
+    summary: 'your past commands',
+    run: (_, { env }) => ({ text: env.history.map((h, i) => `${String(i + 1).padStart(5)}  ${h}`).join('\n') }),
+  },
+  whoami: { summary: 'print the user name', run: (_, { env }) => ({ text: env.info.user }) },
+  date: {
+    summary: 'print the date',
+    run(_, { env }) {
+      const d = env.now();
+      const off = -d.getTimezoneOffset();
+      const zone = `${off >= 0 ? '+' : '-'}${p2(Math.floor(Math.abs(off) / 60))}${off % 60 ? p2(Math.abs(off) % 60) : ''}`;
+      return { text: `${DAYS[d.getDay()]} ${MONTHS[d.getMonth()]} ${String(d.getDate()).padStart(2)} ${clock(d)} ${zone} ${d.getFullYear()}` };
+    },
+  },
+  echo: {
+    summary: 'print text',
+    run(args, { env }) {
+      const { user } = env.info;
+      const vars: Record<string, string> = { USER: user, HOME: absPath(user, []), SHELL: '/bin/bash', PWD: absPath(user, env.cwd), EDITOR: 'vim' };
+      return { text: args.join(' ').replace(/\$\?/g, String(env.status)).replace(/\$(\w+)/g, (_, k: string) => (Object.hasOwn(vars, k) ? vars[k] : '')) };
+    },
+  },
+  man: {
+    summary: 'show a manual page',
+    run(args) {
+      const name = args[0];
+      if (!name) return { text: "What manual page do you want?\nFor example, try 'man ls'.", status: 1 };
+      if (!Object.hasOwn(COMMANDS, name)) return { text: `No manual entry for ${name}`, status: 16 };
+      const title = `${name.toUpperCase()}(1)`;
+      return { html: `${span('b', title.padEnd(30))}User Commands\n\n${span('b', 'NAME')}\n       ${esc(name)} - ${esc(COMMANDS[name].summary)}` };
+    },
+  },
+  which: {
+    summary: 'locate a command',
+    run(args) {
+      const name = args[0] ?? '';
+      if (!Object.hasOwn(COMMANDS, name)) return { text: '', status: 1 };
+      return { text: ['cd', 'history', 'echo', 'pwd', 'exit'].includes(name) ? `${name}: shell built-in command` : `/usr/bin/${name}` };
+    },
+  },
+  clear: {
+    summary: 'clear the screen',
+    run: (_, { env }) => {
+      env.clear();
+      return {};
+    },
+  },
+  exit: { summary: 'close the session', run: () => ({ html: `logout\n\n${span('c-dim', '[Process completed]')}`, text: 'logout', exit: true }) },
+  sudo: {
+    summary: 'run as root',
+    hidden: true,
+    run: (_, { env }) => ({ text: `[sudo] password for ${env.info.user}: \nSorry, try again.\nsudo: 1 incorrect password attempt`, status: 1 }),
+  },
+  rm: {
+    summary: 'remove files',
+    hidden: true,
+    run: (args) => ({ text: `rm: cannot remove '${split(args).rest[0] ?? ''}': Read-only file system`, status: 1 }),
+  },
+  mv: {
+    summary: 'move files',
+    hidden: true,
+    run(args) {
+      const [from = '', to = ''] = split(args).rest;
+      return { text: `mv: cannot move '${from}' to '${to}': Read-only file system`, status: 1 };
+    },
+  },
+};
+
+const visible = () => Object.keys(COMMANDS).filter((n) => !COMMANDS[n].hidden);
+
+function notFound(name: string): Result {
+  const near = closest(name, visible());
+  return { html: esc(`${name}: command not found`) + (near ? `\n${span('c-dim', `did you mean ${near}?`)}` : ''), text: `${name}: command not found`, status: 127 };
+}
+
+/** Runs one input line: aliases, then each `|` stage with the previous result as its input. */
+export function run(line: string, env: Env): Result {
+  const stages = line.split('|').map((s) => s.trim());
+  let res: Result | undefined;
+  for (const stage of stages) {
+    let words = tokenize(stage);
+    if (!words.length) return { text: "bash: syntax error near unexpected token `|'", status: 2 };
+    if (Object.hasOwn(ALIASES, words[0])) words = [...tokenize(ALIASES[words[0]]), ...words.slice(1)];
+    const [name, ...args] = words;
+    if (!Object.hasOwn(COMMANDS, name)) return notFound(name);
+    res = COMMANDS[name].run(args, { env, stdin: res });
+  }
+  return res ?? {};
+}
+
+export const SUGGESTIONS = ['help', 'cat about.md', 'ls', 'ls -a', 'neofetch', 'git log', 'history', 'whoami'];
+
+const FLAGS: Record<string, string[]> = {
+  ls: ['-l', '-a', '-la'], tail: ['-n'], head: ['-n'], grep: ['-i', '-v', '-c'], wc: ['-l', '-w', '-c'],
+};
+
+export interface Candidate {
+  value: string;
+  label?: string;
+  dir?: boolean;
+}
+
+function pathCandidates(env: Env, cur: string, dirsOnly: boolean): Candidate[] {
+  const slash = cur.lastIndexOf('/');
+  const dirPart = cur.slice(0, slash + 1);
+  const base = cur.slice(slash + 1);
+  const r = resolve(env.home, env.cwd, dirPart || '.');
+  if (!r || r.node.t !== 'd') return [];
+  return Object.entries(r.node.c)
+    .filter(([n, node]) => (!dirsOnly || node.t === 'd') && (base.startsWith('.') || !n.startsWith('.')))
+    .map(([n, node]) => {
+      const dir = node.t === 'd';
+      return { value: dirPart + n + (dir ? '/' : ''), label: n + (dir ? '/' : ''), dir };
+    });
+}
+
+/** Everything Tab could insert for the current word, before filtering by what was typed. */
+export function candidates(env: Env, words: string[], cur: string): Candidate[] {
+  const of = (xs: string[]) => xs.map((value) => ({ value }));
+  if (words.length === 1) return of([...visible(), ...Object.keys(ALIASES)].sort());
+  const cmd = words[0];
+  if (cur.startsWith('-')) return of(FLAGS[cmd] ?? []);
+  switch (cmd) {
+    case 'man':
+    case 'which':
+      return of(visible());
+    case 'git':
+      return words.length === 2 ? of(['log', 'status']) : [];
+    case 'open':
+      return [...pathCandidates(env, cur, false), ...of(Object.keys(namedLinks(env)))];
+    case 'grep':
+      return words.length === 2 ? [] : pathCandidates(env, cur, false);
+    default:
+      return pathCandidates(env, cur, cmd === 'cd');
+  }
+}
+
+export const promptHTML = (user: string, cwd: readonly string[]) => `${span('c-ok b', `${user}@${HOST}`)}:${span('c-info b', pathLabel(cwd))}$ `;

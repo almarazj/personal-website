@@ -1,15 +1,13 @@
 ---
 import { getEntry } from 'astro:content';
+import Hero from '../components/home/Hero.astro';
 import Base from '../layouts/Base.astro';
 
-const profile = await getEntry('profile', 'profile');
-if (!profile) throw new Error('content/profile.md is missing');
-const { name, role, description } = profile.data;
+const { name, role, description } = (await getEntry('profile', 'profile'))!.data;
 ---
 
 <Base title={`${name} · ${role}`} description={description}>
   <main class="page">
-    <h1>{name}</h1>
-    <p>{role}</p>
+    <Hero />
   </main>
 </Base>

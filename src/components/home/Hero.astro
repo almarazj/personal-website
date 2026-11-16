@@ -1,0 +1,19 @@
+---
+import { getEntry } from 'astro:content';
+import { commit } from '../../lib/build';
+import Terminal from './Terminal.astro';
+import { terminalData } from './terminal/data';
+
+const profile = (await getEntry('profile', 'profile'))!.data;
+---
+
+<section id="hero" class="hero">
+  <h1 class="visually-hidden">{profile.name}</h1>
+  <Terminal data={terminalData(profile, commit)} />
+</section>
+
+<style>
+  .hero {
+    padding-top: 48px;
+  }
+</style>

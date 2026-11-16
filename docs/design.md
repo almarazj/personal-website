@@ -11,6 +11,7 @@ Each component section below is added in the same pull request that brings the c
 - The page follows the system's light or dark scheme until the reader picks one with the header toggle; that pick is stored and wins from then on.
 - Motion is small (250 ms or less) and always disabled under `prefers-reduced-motion`.
 - English only, with `lang="en"` so browsers offer translation.
+- Personal data comes from `content/`, never from code: even the terminal's login and the letters it draws derive from the profile name.
 - Interactive pieces are islands loaded with `client:visible`; everything else ships zero JS.
 
 ## Color
@@ -27,6 +28,11 @@ The stored pick lives in `localStorage` under `mode`; an inline script in `Base.
 | `--line` | `#e2e4e7` | `#2a2d32` | Borders, dividers |
 | `--soft` | `#f1f2f3` | `#1d1f23` | Chip and pill fills, subtle panels |
 | `--accent` | `#c2410c` | `#fb8a4c` | Links, focus ring |
+
+### Graphite and tty (terminal surfaces)
+
+Identical in both modes: `--g-acc` (prompt, keys), `--g-ok` (prompt user), `--g-info` (directories), and the `--tty-*` screen colors.
+The hero window's glass (`--tty-glass`, `--tty-edge`, `--tty-shadow`) changes with the mode.
 
 ## Typography
 
@@ -58,6 +64,23 @@ Use `font-variant-numeric: tabular-nums` wherever digits line up.
 Sticky at the top of every page: the name, linking home, on the left, and the mode toggle on the right, both on the page frame's edges.
 The toggle is a bare icon with no box that names what a click switches to: a moon in light mode, a sun in dark mode.
 Its bar is light glass: the page background at 72% over a 14px blur, reaching the viewport edges; solid under `prefers-reduced-transparency`.
+
+### Hero
+
+One terminal window 800px wide and centered (474px tall with its 34px header bar; on phones `min(634px, 85svh)`), with a visually hidden h1 carrying the name.
+It is a Linux window: a header bar titled `<login>@ubuntu: ~` with minimize, maximize and close buttons, over translucent dark glass (blur 22px) on the plain page background; solid under `prefers-reduced-transparency`.
+The login is the profile's first name, lowercase and without accents.
+
+It opens straight on `neofetch`: the profile's initials spinning in 3D ASCII on the left and, on the right, Role, Uptime (years since `careerStart`), Based (with the visitor-side local time in the profile's `timeZone`), Languages and Links, then the color swatches and "type help to look around".
+The build renders the same screen without the clock, so it reads as finished before JS runs.
+Rows for experience, education and projects join as those sections arrive.
+
+The prompt is a small bash-like shell over the site content:
+- Files: `about.md` and `.bashrc` for now; each section adds its own directory.
+- Commands: `help`, `ls`, `cd`, `cat`, `open` (profile links by name), `neofetch`, `git log` and `git status` (the commit the page was built from), `history`, `clear`, `exit`, plus `pwd`, `whoami`, `date`, `echo`, `man`, `which` and `head`, `tail`, `grep`, `wc`, `sort` behind pipes.
+- Line editing: block cursor, grey suggestion from history then common commands (accept with → or End, or a tap), Tab completion with a menu that Tab cycles, ↑ ↓ filtered by what was typed, Ctrl+C, Ctrl+L, Ctrl+A, Ctrl+E, Ctrl+U, Ctrl+K; history persists in `localStorage["terminal-history"]`.
+- The art spins only while on screen and the tab is visible, and holds still under `prefers-reduced-motion`.
+- Tab on an empty prompt moves focus on, so the terminal never traps the keyboard; a swipe on it scrolls the page.
 
 ### Footer
 
