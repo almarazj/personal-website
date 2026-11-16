@@ -5,7 +5,7 @@ description: Backend engineer building APIs and data systems in Python and Node.
 location: Buenos Aires, AR
 timeZone: America/Argentina/Buenos_Aires
 languages: Spanish (native), English (C1)
-careerStart: 2024-04
+careerStart: 2024-08
 links:
   - label: GitHub
     url: https://github.com/almarazj

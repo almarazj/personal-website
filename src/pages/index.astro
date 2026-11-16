@@ -1,5 +1,6 @@
 ---
 import { getEntry } from 'astro:content';
+import Experience from '../components/home/Experience.astro';
 import Hero from '../components/home/Hero.astro';
 import Base from '../layouts/Base.astro';
 
@@ -9,5 +10,6 @@ const { name, role, description } = (await getEntry('profile', 'profile'))!.data
 <Base title={`${name} · ${role}`} description={description}>
   <main class="page">
     <Hero />
+    <Experience />
   </main>
 </Base>

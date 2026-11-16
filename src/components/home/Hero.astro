@@ -1,15 +1,16 @@
 ---
-import { getEntry } from 'astro:content';
+import { getCollection, getEntry } from 'astro:content';
 import { commit } from '../../lib/build';
 import Terminal from './Terminal.astro';
 import { terminalData } from './terminal/data';
 
 const profile = (await getEntry('profile', 'profile'))!.data;
+const experience = await getCollection('experience');
 ---
 
 <section id="hero" class="hero">
   <h1 class="visually-hidden">{profile.name}</h1>
-  <Terminal data={terminalData(profile, commit)} />
+  <Terminal data={terminalData({ profile, experience }, commit)} />
 </section>
 
 <style>

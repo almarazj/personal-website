@@ -5,7 +5,7 @@ import ThemeToggle from './ThemeToggle.astro';
 const profile = await getEntry('profile', 'profile');
 ---
 
-<header class="site-header">
+<header class="site-header" data-header>
   <div class="page bar">
     <a class="name" href="/">{profile?.data.name}</a>
     <ThemeToggle />
@@ -23,6 +23,11 @@ const profile = await getEntry('profile', 'profile');
     background: color-mix(in srgb, var(--bg) 72%, transparent);
     -webkit-backdrop-filter: blur(14px) saturate(150%);
     backdrop-filter: blur(14px) saturate(150%);
+    border-bottom: 1px solid transparent;
+    transition: border-color 150ms;
+  }
+  .site-header[data-stuck] {
+    border-bottom-color: var(--line);
   }
   @media (prefers-reduced-transparency: reduce) {
     .site-header {
@@ -43,3 +48,12 @@ const profile = await getEntry('profile', 'profile');
     white-space: nowrap;
   }
 </style>
+
+<script>
+  // The border appears once the hero has scrolled under the header, or right away on pages without one.
+  const header = document.querySelector<HTMLElement>('[data-header]')!;
+  const hero = document.getElementById('hero');
+  const update = () => header.toggleAttribute('data-stuck', !hero || hero.getBoundingClientRect().bottom < header.offsetHeight);
+  addEventListener('scroll', update, { passive: true });
+  update();
+</script>

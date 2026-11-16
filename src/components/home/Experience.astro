@@ -1,0 +1,33 @@
+---
+import { getCollection, render } from 'astro:content';
+import Entry from './Entry.astro';
+import { byRecency, monogram, monthLabel } from './experience';
+import { tenure } from './tenure';
+
+const now = new Date();
+const roles = (await getCollection('experience')).sort((a, b) => byRecency(a.data, b.data));
+const entries = await Promise.all(roles.map(async (r) => ({ ...r, Content: (await render(r)).Content })));
+---
+
+<section id="experience" class="section" style="--sc: var(--c-experience)">
+  <h2 class="section-label">Work experience</h2>
+  {
+    entries.map(({ id, data: x, Content }) => (
+      <Entry
+        id={`exp-${id}`}
+        logo={x.logo}
+        monogram={monogram(x.org)}
+        title={x.role}
+        period={`${monthLabel(x.start)} - ${x.end ? monthLabel(x.end) : 'now'}`}
+        org={x.org}
+        url={x.url}
+        place={x.place}
+        mode={x.mode}
+        meta={`${tenure(x.start, x.end ?? null, now).years.toFixed(1)} yrs${x.type ? ` · ${x.type}` : ''}`}
+        stack={x.stack}
+      >
+        <Content />
+      </Entry>
+    ))
+  }
+</section>
