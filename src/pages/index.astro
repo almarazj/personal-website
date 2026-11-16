@@ -1,0 +1,19 @@
+---
+import { getEntry } from 'astro:content';
+
+const profile = await getEntry('profile', 'profile');
+if (!profile) throw new Error('content/profile.md is missing');
+const { name, role } = profile.data;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{name}</title>
+  </head>
+  <body>
+    <h1>{name}</h1>
+    <p>{role}</p>
+  </body>
+</html>
