@@ -1,12 +1,17 @@
 ---
-import { getCollection, render } from 'astro:content';
+import { getCollection, getEntry, render } from 'astro:content';
 import { external } from '../../lib/links';
+import { paperUrl } from '../../lib/papers';
 import Entry from './Entry.astro';
 import { byRecency, byYearThenName, monogram, yearSpan } from './entries';
 
 const degrees = (await getCollection('education')).sort((a, b) => byRecency(a.data, b.data));
 const entries = await Promise.all(degrees.map(async (d) => ({ ...d, Content: (await render(d)).Content })));
 const certificates = (await getCollection('certificates')).sort((a, b) => byYearThenName(a.data, b.data));
+const { name } = (await getEntry('profile', 'profile'))!.data;
+const papers = (await getCollection('publications'))
+  .sort((a, b) => b.data.year - a.data.year || a.data.title.localeCompare(b.data.title))
+  .map(({ id, data: p }) => ({ id, ...p, url: paperUrl(p.file), coauthors: p.authors.filter((a) => a !== name) }));
 ---
 
 <section id="education" class="section" style="--sc: var(--c-education)">
@@ -34,8 +39,37 @@ const certificates = (await getCollection('certificates')).sort((a, b) => byYear
     ))
   }
   {
+    papers.length > 0 && (
+      <div id="edu-papers" class="row">
+        <h3 class="key">Papers</h3>
+        <ul class="papers">
+          {papers.map((p) => (
+            <li>
+              <a href={p.url} {...external(p.url)} hreflang={p.language === 'Spanish' ? 'es' : undefined}>
+                {p.title}
+              </a>
+              <p class="cite">
+                {p.language && <span>in {p.language}</span>}
+                <span>
+                  {p.venue} {p.year}
+                </span>
+                {p.coauthors.length > 0 && <span>with {p.coauthors.join(', ')}</span>}
+                {p.project && <a href={`/projects/${p.project.id}`}>project</a>}
+                {p.proceedings && (
+                  <a href={p.proceedings} {...external(p.proceedings)}>
+                    proceedings
+                  </a>
+                )}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
+  {
     certificates.length > 0 && (
-      <div id="edu-certs" class="certs-row">
+      <div id="edu-certs" class="row">
         <h3 class="key">Certs</h3>
         <ul class="certs">
           {certificates.map(({ data: c }, i) => (
@@ -56,7 +90,7 @@ const certificates = (await getCollection('certificates')).sort((a, b) => byYear
 
 <style>
   /* Lined up with the degree entry above: the label sits in its 48px logo column. */
-  .certs-row {
+  .row {
     display: grid;
     grid-template-columns: 48px minmax(0, 1fr);
     gap: 18px;
@@ -103,8 +137,41 @@ const certificates = (await getCollection('certificates')).sort((a, b) => byYear
     color: var(--muted);
     white-space: nowrap;
   }
+  .papers {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .papers > li > a {
+    color: var(--fg);
+    text-decoration-color: var(--sc);
+    text-underline-offset: 3px;
+  }
+  .cite {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 0;
+    margin: 4px 0 0;
+    font: 400 12px/1.6 var(--font-mono);
+    color: var(--muted);
+  }
+  /* Inline-block keeps the separator out of a link's underline, and ::before stays clear of the new-tab note. */
+  .cite > * + *::before {
+    content: '·';
+    display: inline-block;
+    margin-inline: 0.6em;
+    color: var(--faint);
+  }
+  .cite a {
+    color: var(--muted);
+  }
+  .cite a:hover {
+    color: var(--fg);
+  }
   @media (max-width: 560px) {
-    .certs-row {
+    .row {
       grid-template-columns: 1fr;
       gap: 6px;
     }

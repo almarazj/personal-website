@@ -1,0 +1,43 @@
+/* Rendered Markdown on content pages. */
+.prose {
+  --prose-accent: var(--accent);
+  max-width: 68ch;
+  font: 400 18px/1.72 var(--font-serif);
+  overflow-wrap: break-word;
+}
+.prose p,
+.prose ul,
+.prose ol {
+  margin: 0 0 1.1em;
+}
+.prose ul,
+.prose ol {
+  padding-left: 1.3em;
+}
+.prose li + li {
+  margin-top: 0.3em;
+}
+.prose h2,
+.prose h3 {
+  margin: 1.8em 0 0.6em;
+  font: 600 1.4em/1.3 var(--font-sans);
+  scroll-margin-top: 80px;
+}
+.prose h3 {
+  font-size: 1.15em;
+}
+.prose > :first-child {
+  margin-top: 0;
+}
+.prose > :last-child {
+  margin-bottom: 0;
+}
+.prose a {
+  color: var(--prose-accent);
+}
+.prose code {
+  padding: 1px 5px;
+  font: 400 0.82em var(--font-mono);
+  background: var(--soft);
+  border-radius: 4px;
+}

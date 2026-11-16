@@ -143,7 +143,8 @@ export class Shell {
       target?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
       return;
     }
-    window.open(href, '_blank', 'noopener');
+    if (href.startsWith('/')) location.assign(href);
+    else window.open(href, '_blank', 'noopener');
   }
 
   private setFocused(on: boolean) {

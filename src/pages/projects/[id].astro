@@ -1,0 +1,232 @@
+---
+import '../../styles/prose.css';
+import type { GetStaticPaths } from 'astro';
+import { getCollection, getEntry, render } from 'astro:content';
+import ProjectCover from '../../components/home/ProjectCover.astro';
+import Base from '../../layouts/Base.astro';
+import { external } from '../../lib/links';
+import { paperUrl } from '../../lib/papers';
+
+export const getStaticPaths = (async () => {
+  const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+  return projects.map((project, i) => ({ params: { id: project.id }, props: { project, prev: projects[i - 1], next: projects[i + 1] } }));
+}) satisfies GetStaticPaths;
+
+const { project, prev, next } = Astro.props;
+const { name } = (await getEntry('profile', 'profile'))!.data;
+const p = project.data;
+const { Content } = await render(project);
+const papers = (await getCollection('publications', (x) => x.data.project?.id === project.id)).map((x) => paperUrl(x.data.file));
+const links = [...papers.map((url) => ({ label: 'Paper', url })), ...p.links];
+---
+
+<Base title={`${p.title} · ${name}`} description={p.summary}>
+  <main class="page">
+    <article style="--sc: var(--c-projects)">
+      <a class="back" href={`/#proj-${project.id}`}>← Projects</a>
+      <header class="head">
+        <p class="meta">
+          <span>{p.year}</span>
+          {
+            p.live && (
+              <span class="live">
+                <span class="live-dot" />
+                Live
+              </span>
+            )
+          }
+          <span class="badge">{p.context}</span>
+          <span>{p.domains.join(' · ')}</span>
+        </p>
+        <h1>{p.title}</h1>
+        <p class="summary">{p.summary}</p>
+      </header>
+      {
+        p.cover && (
+          <figure>
+            <ProjectCover project={p} width={1040} crop={false} class="hero" loading="eager" />
+            {p.coverCaption && <figcaption>{p.coverCaption}</figcaption>}
+          </figure>
+        )
+      }
+      <div class="prose"><Content /></div>
+      {p.confidential && <p class="note">Confidential client work: no screenshots, names or figures that identify the client.</p>}
+      {
+        (p.stack.length > 0 || links.length > 0) && (
+          <footer class="facts">
+            {p.stack.length > 0 && (
+              <ul class="chips" aria-label="Stack">
+                {p.stack.map((s) => (
+                  <li class="chip">{s}</li>
+                ))}
+              </ul>
+            )}
+            {links.length > 0 && (
+              <p class="links">
+                {links.map((l) => (
+                  <a class="pill" href={l.url} {...external(l.url)}>
+                    {l.label} ↗
+                  </a>
+                ))}
+              </p>
+            )}
+          </footer>
+        )
+      }
+      {
+        (prev || next) && (
+          <nav class="more" aria-label="More projects">
+            {prev ? (
+              <a href={`/projects/${prev.id}`} rel="prev">
+                <span>Previous project</span>
+                {prev.data.title}
+              </a>
+            ) : (
+              <span />
+            )}
+            {next && (
+              <a href={`/projects/${next.id}`} rel="next" class="next">
+                <span>Next project</span>
+                {next.data.title}
+              </a>
+            )}
+          </nav>
+        )
+      }
+    </article>
+  </main>
+</Base>
+
+<style>
+  main {
+    padding-top: 48px;
+  }
+  article {
+    display: grid;
+    gap: 24px;
+    min-width: 0;
+  }
+  .back {
+    justify-self: start;
+    font: 400 12.5px/1.5 var(--font-mono);
+    color: var(--sc);
+    text-decoration: none;
+  }
+  .back:hover {
+    text-decoration: underline;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 10px;
+    margin: 0;
+    font: 400 12.5px/1.5 var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    color: var(--sc);
+  }
+  .live {
+    display: inline-flex;
+    align-items: center;
+    /* Room for the ring at its widest. */
+    gap: 10px;
+    padding-left: 4px;
+    color: var(--ok);
+  }
+  .badge {
+    padding: 1px 6px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-control);
+    font: 500 11px/1.4 var(--font-mono);
+    color: var(--muted);
+  }
+  h1 {
+    margin: 8px 0;
+    font: 600 32px/1.2 var(--font-sans);
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+  /* Text keeps its reading measure; everything else spans the content column. */
+  .summary {
+    max-width: 68ch;
+    margin: 0;
+    color: var(--muted);
+  }
+  figure {
+    margin: 0;
+  }
+  figcaption {
+    margin-top: 10px;
+    font: 400 12.5px/1.6 var(--font-mono);
+    color: var(--muted);
+  }
+  figure > :global(.hero) {
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+  }
+  /* Shown whole, centered, and never taller than most screens. */
+  figure > :global(.hero img) {
+    max-width: 100%;
+    max-height: 560px;
+    object-fit: contain;
+  }
+  .prose {
+    --prose-accent: var(--sc);
+    min-width: 0;
+  }
+  .note {
+    margin: 0;
+    font: 400 12.5px/1.5 var(--font-mono);
+    color: var(--faint);
+  }
+  .facts {
+    display: grid;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+  }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+  }
+  .more {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 20px;
+  }
+  .more a {
+    display: block;
+    padding: 12px 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    color: var(--fg);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .more a:hover {
+    border-color: var(--sc);
+  }
+  .more a span {
+    display: block;
+    font: 400 12px/1.5 var(--font-mono);
+    color: var(--muted);
+  }
+  .more .next {
+    grid-column: 2;
+    text-align: right;
+  }
+  @media (max-width: 680px) {
+    .more {
+      grid-template-columns: 1fr;
+    }
+    .more .next {
+      grid-column: 1;
+    }
+  }
+</style>

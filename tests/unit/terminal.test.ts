@@ -33,7 +33,14 @@ const certificates = [
   { data: { name: 'Spanish', issuer: 'DELE', year: 2025 } },
   { data: { name: 'English', issuer: 'EF SET', year: 2025 } },
 ];
-const content = { profile, experience, education, certificates };
+const projects = [
+  { id: 'relay', body: '## Why\n\nRetries.', data: { title: 'Webhook <relay>', summary: 'Relays events.', year: 2025, context: 'Work' as const, domains: ['Backend' as const], order: 2, live: true, confidential: false, stack: ['Go'], links: [{ label: 'Source', url: 'https://github.com/ana/relay' }] } },
+  { id: 'site', body: '', data: { title: 'This site', summary: 'A site.', year: 2026, context: 'Personal' as const, domains: ['Backend' as const], order: 1, live: false, confidential: false, stack: [], links: [] } },
+];
+const publications = [
+  { data: { title: 'Colas en la práctica', language: 'Spanish', authors: ['Ana María López', 'Bo Chen'], venue: 'Some Conference', year: 2024, file: 'queues.pdf' } },
+];
+const content = { profile, experience, education, certificates, publications, projects };
 const COMMIT = 'abc1234def5678abc1234def5678abc1234def56';
 const NOW = new Date(Date.UTC(2026, 10, 12, 14, 14));
 
@@ -91,10 +98,11 @@ describe('neofetch', () => {
       ['Education', 'B.Sc. in Computer Science'],
       ['Languages', 'Spanish, English'],
       ['Links', 'github · linkedin'],
+      ['Packages', '2 projects'],
     ]);
   });
   it('leaves out the clock at build time and rows without data', () => {
-    const r = rows({ ...info, languages: undefined, careerStart: undefined, stack: [], education: undefined, links: [] }, NOW);
+    const r = rows({ ...info, languages: undefined, careerStart: undefined, stack: [], education: undefined, links: [], projects: 0 }, NOW);
     expect(r.map((x) => [x.key, x.text])).toEqual([['Role', 'Backend Engineer'], ['Based', 'Lima, PE']]);
   });
   it('says under a year for a new career', () => {
@@ -175,7 +183,7 @@ describe('commands', () => {
   });
   it('ls, cd and pwd walk the content as files under the login home', () => {
     const { env } = makeEnv();
-    expect(run('ls', env).text).toBe('about.md\neducation\nexperience');
+    expect(run('ls', env).text).toBe('about.md\neducation\nexperience\nprojects');
     expect(run('ls -a', env).text).toContain('.bashrc');
     expect(run('ls -l', env).text).toContain('ana ana');
     expect(run('pwd', env).text).toBe('/home/ana');
@@ -192,11 +200,20 @@ describe('commands', () => {
   });
   it('education/ holds each degree and the certificates, newest first', () => {
     const { env, opened } = makeEnv();
-    expect(run('ls education', env).text).toBe('certificates.txt\ncs.md');
+    expect(run('ls education', env).text).toBe('certificates.txt\ncs.md\npapers.txt');
+    expect(run('cat education/papers.txt', env).text).toBe('Colas en la práctica\nAna María López, Bo Chen · Some Conference 2024 · in Spanish');
     expect(run('cat education/cs.md', env).text).toBe('# B.Sc. in Computer Science\nBig State University · 2016-03 to 2020-12\n\nA degree.\n\nThesis: On <queues>.');
     expect(run('cat education/certificates.txt', env).text!.split('\n').map((l) => l.split(/\s{2,}/)[0])).toEqual(['English', 'Spanish', 'Old Cert']);
     run('open education/certificates.txt', env);
     expect(opened).toEqual(['/#edu-certs']);
+  });
+  it('projects/ holds one file per project in home order, each opening its page', () => {
+    const { env, opened } = makeEnv();
+    expect(run('ls projects', env).text).toBe('relay.md\nsite.md');
+    expect(run('cat projects/relay.md', env).text).toBe('# Webhook <relay>\n2025 · Work · Backend · live\n\nRelays events.\n\n## Why\n\nRetries.\n\n- Go\n- Source: https://github.com/ana/relay');
+    expect(run('cat projects/site.md', env).text).toBe('# This site\n2026 · Personal · Backend\n\nA site.');
+    run('open projects/relay.md', env);
+    expect(opened).toEqual(['/projects/relay']);
   });
   it('cat prints content escaped and linkified', () => {
     const { env } = makeEnv();

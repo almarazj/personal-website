@@ -1,0 +1,12 @@
+# Shown newest first, then by title.
+- id: velvet-noise-jaas-2025
+  title: "Umbrales de densidad de pulsos para velvet noise usado en reverberación artificial: un estudio de escucha en línea"
+  language: Spanish
+  authors: [Juan Almaraz, Shin-ichi Sato, Mariano Girola]
+  venue: VIII Jornadas de Acústica, Audio y Sonido
+  year: 2025
+  # A file in content/papers/, served from the site.
+  file: velvet-noise-jaas-2025.pdf
+  proceedings: https://drive.google.com/file/d/1iwYlrmFKE-wGS82vIjvv4LPyJv0wTGaP/view?usp=sharing
+  # The project page that tells the story, if any.
+  project: velvet-noise-reverberation

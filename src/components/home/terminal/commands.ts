@@ -104,7 +104,7 @@ const HELP: [string, string][] = [
   ['ls [dir]', 'list files'],
   ['cd <dir>', 'change directory'],
   ['cat <file>', 'print a file'],
-  ['open <link>', 'open a link, like github'],
+  ['open <file|link>', 'open a page, or a link like github'],
   ['neofetch', 'who I am, at a glance'],
   ['git log', 'the commit this page was built from'],
   ['history', 'your past commands'],
@@ -416,7 +416,7 @@ export function run(line: string, env: Env): Result {
   return res ?? {};
 }
 
-export const SUGGESTIONS = ['help', 'cat about.md', 'cd experience', 'ls', 'ls -a', 'neofetch', 'git log', 'history', 'whoami'];
+export const SUGGESTIONS = ['help', 'cat about.md', 'cd projects', 'cd experience', 'ls', 'ls -a', 'neofetch', 'git log', 'history', 'whoami'];
 
 const FLAGS: Record<string, string[]> = {
   ls: ['-l', '-a', '-la'], tail: ['-n'], head: ['-n'], grep: ['-i', '-v', '-c'], wc: ['-l', '-w', '-c'],
