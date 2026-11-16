@@ -8,6 +8,7 @@ const profile = defineCollection({
   schema: z.object({
     name: z.string(),
     role: z.string(),
+    description: z.string(),
   }),
 });
 

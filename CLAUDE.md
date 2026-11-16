@@ -6,6 +6,7 @@ A simple static site done well: no backend, no admin panel; content is edited in
 ## Docs
 
 - `README.md`: a short public overview of how the site works.
+- `docs/design.md`: read before touching any UI; tokens, typography and each component's chosen behavior.
 
 ## Content and code
 
