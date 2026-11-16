@@ -1,0 +1,112 @@
+---
+import { getCollection, render } from 'astro:content';
+import { external } from '../../lib/links';
+import Entry from './Entry.astro';
+import { byRecency, byYearThenName, monogram, yearSpan } from './entries';
+
+const degrees = (await getCollection('education')).sort((a, b) => byRecency(a.data, b.data));
+const entries = await Promise.all(degrees.map(async (d) => ({ ...d, Content: (await render(d)).Content })));
+const certificates = (await getCollection('certificates')).sort((a, b) => byYearThenName(a.data, b.data));
+---
+
+<section id="education" class="section" style="--sc: var(--c-education)">
+  <h2 class="section-label">Education</h2>
+  {
+    entries.map(({ id, data: d, Content }) => (
+      <Entry
+        id={`edu-${id}`}
+        logo={d.logo}
+        monogram={monogram(d.school)}
+        title={d.title}
+        period={yearSpan(d.start, d.end)}
+        org={d.school}
+        url={d.url}
+        place={d.place}
+      >
+        <Content />
+        {d.thesis && (
+          <p class="thesis">
+            <span class="key">Thesis</span>
+            <span>{d.thesis}</span>
+          </p>
+        )}
+      </Entry>
+    ))
+  }
+  {
+    certificates.length > 0 && (
+      <div id="edu-certs" class="certs-row">
+        <h3 class="key">Certs</h3>
+        <ul class="certs">
+          {certificates.map(({ data: c }, i) => (
+            <li>
+              {c.url ? <a href={c.url} {...external(c.url)}>{c.name}</a> : <span class="name">{c.name}</span>} <span class="issuer">{c.issuer}</span>
+              {i < certificates.length - 1 && (
+                <span class="sep" aria-hidden="true">
+                  ·
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
+</section>
+
+<style>
+  /* Lined up with the degree entry above: the label sits in its 48px logo column. */
+  .certs-row {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 18px;
+    margin-top: 26px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+  }
+  .key {
+    margin: 0;
+    font: 500 12.5px/1.8 var(--font-mono);
+    color: var(--faint);
+  }
+  .thesis {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 10px;
+    font-size: 15px;
+  }
+  .thesis .key {
+    line-height: 1.6;
+  }
+  .certs {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    line-height: 1.9;
+  }
+  /* Each cert wraps as one unit and carries its own separator. */
+  .certs li {
+    display: inline;
+    margin-right: 0.35em;
+  }
+  .certs a {
+    color: var(--fg);
+    text-decoration-color: var(--sc);
+    text-underline-offset: 3px;
+  }
+  .sep {
+    margin-left: 0.35em;
+    color: var(--faint);
+  }
+  .issuer {
+    font: 400 12px var(--font-mono);
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  @media (max-width: 560px) {
+    .certs-row {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+  }
+</style>

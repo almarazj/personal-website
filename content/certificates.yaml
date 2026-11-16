@@ -1,0 +1,26 @@
+# Shown newest first, then by name; the order here does not matter.
+- id: ef-set
+  name: EF SET English Certificate
+  issuer: EF SET
+  year: 2025
+  url: https://cert.efset.org/y7Nsu6
+- id: ibm-python-data-science
+  name: Python for Data Science
+  issuer: IBM
+  year: 2023
+  url: https://courses.cognitiveclass.ai/certificates/8996dd488e844e03892d8fc6922af1e7
+- id: ibm-data-analysis
+  name: Data Analysis with Python
+  issuer: IBM
+  year: 2023
+  url: https://courses.cognitiveclass.ai/certificates/597b01a763704187b8bff0861147a235
+- id: ibm-data-viz
+  name: Data Visualization with Python
+  issuer: IBM
+  year: 2023
+  url: https://courses.cognitiveclass.ai/certificates/1c0d55a75b034c6c85e42ff6c8751e12
+- id: fcc-scientific-python
+  name: Scientific Computing with Python
+  issuer: freeCodeCamp
+  year: 2022
+  url: https://www.freecodecamp.org/certification/almarazj/scientific-computing-with-python-v7

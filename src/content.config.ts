@@ -1,5 +1,5 @@
 import { defineCollection } from 'astro:content';
-import { glob } from 'astro/loaders';
+import { file, glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
 // All site content lives in /content; this file is the contract it must satisfy.
@@ -50,4 +50,34 @@ const experience = defineCollection({
       .refine((x) => !x.end || x.end >= x.start, { message: 'end is before start', path: ['end'] }),
 });
 
-export const collections = { profile, experience };
+// One file per degree; the body is its summary.
+const education = defineCollection({
+  loader: glob({ pattern: '*.md', base: './content/education' }),
+  schema: ({ image }) =>
+    z
+      .object({
+        title: z.string(),
+        school: z.string(),
+        url: z.url().optional(),
+        logo: image().optional(),
+        place: z.string().optional(),
+        start: month,
+        // Left out while the degree is in progress.
+        end: month.optional(),
+        thesis: z.string().optional(),
+      })
+      .refine((x) => !x.end || x.end >= x.start, { message: 'end is before start', path: ['end'] }),
+});
+
+const certificates = defineCollection({
+  loader: file('content/certificates.yaml'),
+  schema: z.object({
+    name: z.string(),
+    issuer: z.string(),
+    year: z.number().int(),
+    // Where to verify or see the original.
+    url: z.url().optional(),
+  }),
+});
+
+export const collections = { profile, experience, education, certificates };

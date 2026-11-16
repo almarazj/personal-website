@@ -2,7 +2,7 @@
 role: Machine Learning Engineer
 org: Infiniem Labs
 url: https://www.infiniemlabs.com.ar/
-logo: ./logos/infiniem-labs.png
+logo: ../logos/infiniem-labs.png
 start: 2024-08
 end: 2024-12
 place: Buenos Aires, AR

@@ -6,7 +6,7 @@ interface Role {
 }
 
 /** Current roles first, longest-running first; then past roles, most recently ended first. */
-export const byRecency = <T extends Role>(a: T, b: T) =>
+export const byRecency = <T extends Pick<Role, 'start' | 'end'>>(a: T, b: T) =>
   !a.end && !b.end ? a.start.localeCompare(b.start) : (b.end ?? '9999').localeCompare(a.end ?? '9999');
 
 /** Two letters for a missing logo: the first two capitalized words, or the first two letters of one. */
@@ -20,3 +20,8 @@ export const currentStack = (roles: Role[]) => [...new Set(roles.filter((r) => !
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 export const monthLabel = (ym: string) => `${MONTHS[Number(ym.slice(5, 7)) - 1]} ${ym.slice(0, 4)}`;
+export const yearSpan = (start: string, end?: string) => `${start.slice(0, 4)} - ${end ? end.slice(0, 4) : 'now'}`;
+
+/** Certificates: newest first, then by name, since the YAML loader does not keep file order. */
+export const byYearThenName = (a: { year: number; name: string }, b: { year: number; name: string }) =>
+  b.year - a.year || a.name.localeCompare(b.name);
