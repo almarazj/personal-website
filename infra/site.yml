@@ -8,6 +8,12 @@ Parameters:
   Repository:
     Type: String
     Description: GitHub repository as owner/name
+  DomainName:
+    Type: String
+    Description: Apex domain the site answers on; www redirects to it
+  CertificateArn:
+    Type: String
+    Description: ACM certificate in us-east-1 for the domain and its www, which CloudFront requires
 
 Resources:
   SiteBucket:
@@ -47,18 +53,23 @@ Resources:
         SigningBehavior: always
         SigningProtocol: sigv4
 
-  # S3 behind OAC has no index documents, so /projects/foo and /projects/foo/ are mapped to the page Astro built.
+  # www redirects to the apex, so every page has one URL. S3 behind OAC has no index documents,
+  # so /projects/foo and /projects/foo/ are mapped to the page Astro built.
   IndexRewrite:
     Type: AWS::CloudFront::Function
     Properties:
       Name: !Sub ${AWS::StackName}-index
       AutoPublish: true
       FunctionConfig:
-        Comment: Serves directory paths from their index.html
+        Comment: Redirects www to the apex and serves directory paths from their index.html
         Runtime: cloudfront-js-2.0
       FunctionCode: |
         function handler(event) {
           var request = event.request;
+          var host = request.headers.host ? request.headers.host.value : '';
+          if (host.indexOf('www.') === 0) {
+            return { statusCode: 301, statusDescription: 'Moved Permanently', headers: { location: { value: 'https://' + host.slice(4) + request.uri } } };
+          }
           var uri = request.uri;
           if (uri.endsWith('/')) request.uri = uri + 'index.html';
           else if (uri.split('/').pop().indexOf('.') === -1) request.uri = uri + '/index.html';
@@ -70,6 +81,13 @@ Resources:
     Properties:
       DistributionConfig:
         Enabled: true
+        Aliases:
+          - !Ref DomainName
+          - !Sub www.${DomainName}
+        ViewerCertificate:
+          AcmCertificateArn: !Ref CertificateArn
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021
         HttpVersion: http2and3
         IPV6Enabled: true
         PriceClass: PriceClass_100
@@ -184,4 +202,7 @@ Resources:
 
 Outputs:
   SiteUrl:
-    Value: !Sub https://${Distribution.DomainName}
+    Value: !Sub https://${DomainName}
+  DistributionDomain:
+    Description: Target of the domain's DNS records (CNAME, DNS only)
+    Value: !GetAtt Distribution.DomainName
