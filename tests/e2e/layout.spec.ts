@@ -37,3 +37,10 @@ test('footer links out and stamps the commit the page was built from', async ({ 
     /^https:\/\/github\.com\/[^/]+\/[^/]+\/commit\/[0-9a-f]{40}$/,
   );
 });
+
+test('an unknown path answers 404 with a way back home', async ({ page }) => {
+  const res = await page.goto('/no-such-page');
+  expect(res?.status()).toBe(404);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('This page does not exist.');
+  await expect(page.getByRole('main').getByRole('link')).toHaveAttribute('href', '/');
+});

@@ -16,7 +16,7 @@ A simple static site done well: no backend, no admin panel; content is edited in
 ## Stack
 
 - Astro, static output only; interactive pieces are islands loaded with `client:visible`, so the rest ships zero JS.
-- Hosting: private S3 bucket behind CloudFront (Origin Access Control).
+- Hosting: private S3 bucket behind CloudFront (Origin Access Control); a CloudFront Function maps directory paths to their `index.html`, and missing paths get `404.html`.
 - Infra: one CloudFormation stack, `infra/site.yml`.
 - Deploy: CodeBuild on every push to `main`, through a CodeConnections GitHub connection (IAM OIDC providers are blocked by the project SCPs).
 - CI: GitHub Actions lints, runs the unit and E2E suites on every pull request, and lints the template with cfn-lint.
