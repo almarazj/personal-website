@@ -1,6 +1,7 @@
 ---
 import '../styles/tokens.css';
 import '../styles/base.css';
+import Header from '../components/site/Header.astro';
 
 interface Props {
   title: string;
@@ -42,6 +43,7 @@ const fonts =
     <link rel="stylesheet" href={fonts} />
   </head>
   <body id="top">
+    <Header />
     <slot />
   </body>
 </html>

@@ -1,0 +1,67 @@
+<button type="button" class="theme-toggle" aria-label="Dark mode" aria-pressed="false" data-theme-toggle>
+  <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.3A8.5 8.5 0 1 1 9.7 3.5a6.8 6.8 0 0 0 10.8 10.8z" /></svg>
+  <svg class="sun" viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="12" r="4.5" />
+    <path d="M12 1.8v2.4M12 19.8v2.4M1.8 12h2.4M19.8 12h2.4M4.8 4.8l1.7 1.7M17.5 17.5l1.7 1.7M4.8 19.2l1.7-1.7M17.5 6.5l1.7-1.7" />
+  </svg>
+</button>
+
+<style>
+  .theme-toggle {
+    display: grid;
+    place-items: center;
+    /* The padding is hit area only; the negative margin puts the icon itself on the frame's right edge. */
+    margin-right: -6px;
+    padding: 6px;
+    color: var(--muted);
+    background: none;
+    border: 0;
+    border-radius: var(--radius-control);
+    cursor: pointer;
+    transition: color 150ms;
+  }
+  .theme-toggle:hover {
+    color: var(--fg);
+  }
+  svg {
+    grid-area: 1 / 1;
+    width: 17px;
+    height: 17px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  /* The icon names what a click switches to; the pre-paint mode picks it, so it never flashes. */
+  .sun,
+  :global(:root[data-mode='dark']) .moon {
+    display: none;
+  }
+  :global(:root[data-mode='dark']) .sun {
+    display: block;
+  }
+  /* A larger hit area for touch. */
+  @media (max-width: 680px) {
+    .theme-toggle {
+      margin-right: -9px;
+      padding: 7px 9px;
+    }
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+</style>
+
+<script>
+  import { followSystem, toggleTheme } from './theme';
+
+  const button = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+  const sync = () =>
+    button?.setAttribute('aria-pressed', String(document.documentElement.dataset.mode === 'dark'));
+  sync();
+  button?.addEventListener('click', toggleTheme);
+  document.addEventListener('themechange', sync);
+  followSystem();
+</script>
