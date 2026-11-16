@@ -47,6 +47,24 @@ Resources:
         SigningBehavior: always
         SigningProtocol: sigv4
 
+  # S3 behind OAC has no index documents, so /projects/foo and /projects/foo/ are mapped to the page Astro built.
+  IndexRewrite:
+    Type: AWS::CloudFront::Function
+    Properties:
+      Name: !Sub ${AWS::StackName}-index
+      AutoPublish: true
+      FunctionConfig:
+        Comment: Serves directory paths from their index.html
+        Runtime: cloudfront-js-2.0
+      FunctionCode: |
+        function handler(event) {
+          var request = event.request;
+          var uri = request.uri;
+          if (uri.endsWith('/')) request.uri = uri + 'index.html';
+          else if (uri.split('/').pop().indexOf('.') === -1) request.uri = uri + '/index.html';
+          return request;
+        }
+
   Distribution:
     Type: AWS::CloudFront::Distribution
     Properties:
@@ -68,6 +86,17 @@ Resources:
           Compress: true
           CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # Managed-CachingOptimized
           ResponseHeadersPolicyId: 67f7725c-6f97-4210-82d7-5512b31e9d03 # Managed-SecurityHeadersPolicy
+          FunctionAssociations:
+            - EventType: viewer-request
+              FunctionARN: !GetAtt IndexRewrite.FunctionMetadata.FunctionARN
+        # Without s3:ListBucket, S3 answers a missing key with 403; both become the site's 404 page.
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 404
+            ResponsePagePath: /404.html
+          - ErrorCode: 404
+            ResponseCode: 404
+            ResponsePagePath: /404.html
 
   BuildLogs:
     Type: AWS::Logs::LogGroup
