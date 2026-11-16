@@ -128,6 +128,7 @@ Diagrams are SVG exported from Excalidraw, kept next to their `.excalidraw` sour
 The page spans the content column like the home; only the summary and the body keep the 68ch reading measure, left-aligned.
 The cover sits centered in a bordered box across the column, shown whole and never taller than 560px, in a `<figure>` with an optional caption (`coverCaption`) under it in mono, `--muted`, as wide as the image box: the alt text says what the image shows, the caption what it means, and neither repeats the other.
 The body is the file's Markdown in the prose styles (Plex Serif 18px, 68ch measure), with the projects color for links.
+An image alone in its paragraph with a title, `![What it shows](./images/x.png "What it means")`, becomes a figure across the 68ch measure with the title as a mono `--muted` caption, like the cover's; images live in the project's `images/` folder and are converted to WebP at build time.
 Below it: a "Confidential client work" note when it applies, the stack chips and link pills, then previous and next project cards in the home's order.
 The terminal lists each project under `projects/`, `open` goes to its page, and neofetch's Packages row counts them.
 

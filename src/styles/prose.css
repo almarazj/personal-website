@@ -41,3 +41,18 @@
   background: var(--soft);
   border-radius: 4px;
 }
+/* `![alt](src "caption")` alone in a paragraph becomes a figure (src/lib/markdown-figures.ts). */
+.prose img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-card);
+}
+.prose figure {
+  margin: 1.6em 0;
+}
+.prose figcaption {
+  margin-top: 10px;
+  font: 400 12.5px/1.6 var(--font-mono);
+  color: var(--muted);
+}
