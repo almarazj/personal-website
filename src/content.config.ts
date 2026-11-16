@@ -9,6 +9,7 @@ const profile = defineCollection({
     name: z.string(),
     role: z.string(),
     description: z.string(),
+    links: z.array(z.object({ label: z.string(), url: z.url() })),
   }),
 });
 

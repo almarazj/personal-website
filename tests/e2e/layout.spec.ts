@@ -26,3 +26,14 @@ test('no horizontal scroll on a phone', async ({ page }) => {
   await page.goto('/');
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
 });
+
+test('footer links out and stamps the commit the page was built from', async ({ page }) => {
+  await page.goto('/');
+  const footer = page.getByRole('contentinfo');
+  await expect(footer.locator('p').first()).toHaveText(/^© \d{4} \S/);
+  expect(await footer.locator('a[href^="https://"]').count()).toBeGreaterThan(1);
+  await expect(footer.getByTitle('Commit this page was built from')).toHaveAttribute(
+    'href',
+    /^https:\/\/github\.com\/[^/]+\/[^/]+\/commit\/[0-9a-f]{40}$/,
+  );
+});

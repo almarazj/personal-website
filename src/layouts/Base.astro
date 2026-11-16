@@ -1,6 +1,7 @@
 ---
 import '../styles/tokens.css';
 import '../styles/base.css';
+import Footer from '../components/site/Footer.astro';
 import Header from '../components/site/Header.astro';
 
 interface Props {
@@ -45,5 +46,6 @@ const fonts =
   <body id="top">
     <Header />
     <slot />
+    <Footer />
   </body>
 </html>
