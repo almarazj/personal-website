@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { byRecency, currentStack, monogram, monthLabel } from '../../src/components/home/experience';
 import { candidates, COMMANDS, type Env, run, toHTML } from '../../src/components/home/terminal/commands';
 import { terminalData } from '../../src/components/home/terminal/data';
 import { closest, commonPrefix, completionTarget, stepHistory, suggest, tokenize } from '../../src/components/home/terminal/editor';
@@ -19,11 +20,17 @@ const profile = {
     { label: 'LinkedIn', url: 'https://linkedin.com/in/ana' },
   ],
 };
+const experience = [
+  { id: 'old', body: 'Taught classes.', data: { role: 'Teaching Assistant', org: 'Big State University', start: '2020-02', end: '2020-12', place: 'Lima, PE', stack: [] } },
+  { id: 'acme', body: 'Builds APIs.\n\n- Shipped <payments>.', data: { role: 'Backend Engineer', org: 'Acme', start: '2024-04', place: 'Lima, PE', stack: ['Python', 'AWS'] } },
+  { id: 'lab', body: 'Runs the lab.', data: { role: 'Lab Assistant', org: 'Tech School', start: '2025-01', place: 'Lima, PE', stack: ['Python', 'C'] } },
+];
+const content = { profile, experience };
 const COMMIT = 'abc1234def5678abc1234def5678abc1234def56';
 const NOW = new Date(Date.UTC(2026, 10, 12, 14, 14));
 
 function makeEnv(commit: string | null = COMMIT) {
-  const data = terminalData(profile, commit);
+  const data = terminalData(content, commit);
   const opened: string[] = [];
   const env: Env = {
     home: data.home,
@@ -63,7 +70,7 @@ describe('spinner', () => {
 });
 
 describe('neofetch', () => {
-  const { info } = terminalData(profile, COMMIT);
+  const { info } = terminalData(content, COMMIT);
   it('derives the login and initials from the name', () => {
     expect(info).toMatchObject({ user: 'ana', initials: 'AL' });
   });
@@ -71,13 +78,14 @@ describe('neofetch', () => {
     expect(rows(info, NOW, true).map((r) => [r.key, r.text])).toEqual([
       ['Role', 'Backend Engineer'],
       ['Uptime', '2+ years in software engineering'],
+      ['Stack', 'Python, AWS, C'],
       ['Based', 'Lima, PE · 09:14 (GMT-5)'],
       ['Languages', 'Spanish, English'],
       ['Links', 'github · linkedin'],
     ]);
   });
   it('leaves out the clock at build time and rows without data', () => {
-    const r = rows({ ...info, languages: undefined, careerStart: undefined, links: [] }, NOW);
+    const r = rows({ ...info, languages: undefined, careerStart: undefined, stack: [], links: [] }, NOW);
     expect(r.map((x) => [x.key, x.text])).toEqual([['Role', 'Backend Engineer'], ['Based', 'Lima, PE']]);
   });
   it('says under a year for a new career', () => {
@@ -88,6 +96,24 @@ describe('neofetch', () => {
     expect(html).toContain('&lt;b&gt;Engineer&lt;/b&gt;');
     expect(html).toContain('<a href="https://github.com/ana" target="_blank" rel="noopener">github</a>');
     expect(html).toContain('ana</span>@<span class="c-acc b">ubuntu');
+  });
+});
+
+describe('experience', () => {
+  it('orders current roles longest-running first, then past roles by most recent end', () => {
+    const order = [...experience].sort((a, b) => byRecency(a.data, b.data)).map((r) => r.id);
+    expect(order).toEqual(['acme', 'lab', 'old']);
+  });
+  it('makes a monogram from the capitalized words, or the first letters of one', () => {
+    expect(monogram('Universidad de la Defensa Nacional')).toBe('UD');
+    expect(monogram('Infiniem Labs')).toBe('IL');
+    expect(monogram('Mecantronic')).toBe('ME');
+  });
+  it('collects the current stack once, in role order', () => {
+    expect(currentStack(experience.map((r) => r.data))).toEqual(['Python', 'AWS', 'C']);
+  });
+  it('labels months', () => {
+    expect(monthLabel('2025-03')).toBe('Mar 2025');
   });
 });
 
@@ -140,12 +166,20 @@ describe('commands', () => {
   });
   it('ls, cd and pwd walk the content as files under the login home', () => {
     const { env } = makeEnv();
-    expect(run('ls', env).text).toBe('about.md');
+    expect(run('ls', env).text).toBe('about.md\nexperience');
     expect(run('ls -a', env).text).toContain('.bashrc');
     expect(run('ls -l', env).text).toContain('ana ana');
     expect(run('pwd', env).text).toBe('/home/ana');
     expect(run('cd nowhere', env)).toEqual({ text: 'bash: cd: nowhere: No such file or directory', status: 1 });
     expect(run('cd about.md', env)).toEqual({ text: 'bash: cd: about.md: Not a directory', status: 1 });
+  });
+  it('experience/ holds one file per role, newest first, each opening its entry', () => {
+    const { env, opened } = makeEnv();
+    expect(run('ls experience', env).text).toBe('acme.md\nlab.md\nold.md');
+    expect(run('cat experience/acme.md', env).text).toBe('# Backend Engineer\nAcme · Lima, PE · 2024-04 to now\n\nBuilds APIs.\n\n- Shipped <payments>.\n\n- Python, AWS');
+    run('open experience/acme.md', env);
+    run('open experience', env);
+    expect(opened).toEqual(['/#exp-acme', '/#experience']);
   });
   it('cat prints content escaped and linkified', () => {
     const { env } = makeEnv();
@@ -184,6 +218,7 @@ describe('commands', () => {
     const { env } = makeEnv();
     const values = (words: string[], cur: string) => candidates(env, words, cur).map((c) => c.value).filter((v) => v.startsWith(cur));
     expect(values(['cat', 'ab'], 'ab')).toEqual(['about.md']);
+    expect(values(['cd', 'e'], 'e')).toEqual(['experience/']);
     expect(values(['open', 'g'], 'g')).toEqual(['github']);
     expect(values(['m'], 'm')).toEqual(['man']);
     expect(values(['m'], 'm')).not.toContain('mv');

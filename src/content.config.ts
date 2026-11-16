@@ -3,6 +3,8 @@ import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
 // All site content lives in /content; this file is the contract it must satisfy.
+
+const month = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'use YYYY-MM');
 const profile = defineCollection({
   loader: glob({ pattern: 'profile.md', base: './content' }),
   schema: z.object({
@@ -21,9 +23,31 @@ const profile = defineCollection({
     }, 'not an IANA time zone'),
     languages: z.string().optional(),
     // YYYY-MM of the first software role; the hero counts years from it.
-    careerStart: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/).optional(),
+    careerStart: month.optional(),
     links: z.array(z.object({ label: z.string(), url: z.url() })),
   }),
 });
 
-export const collections = { profile };
+// One file per role; the body is the summary paragraph, then highlights as a list.
+const experience = defineCollection({
+  loader: glob({ pattern: '*.md', base: './content/experience' }),
+  schema: ({ image }) =>
+    z
+      .object({
+        role: z.string(),
+        org: z.string(),
+        url: z.url().optional(),
+        // Square, at least 96px; without one the org's initials stand in.
+        logo: image().optional(),
+        start: month,
+        // Left out while the role is current.
+        end: month.optional(),
+        place: z.string(),
+        mode: z.enum(['Remote', 'Hybrid', 'On-site']).optional(),
+        type: z.enum(['Full-time', 'Part-time', 'Contract', 'Internship']).optional(),
+        stack: z.array(z.string()).default([]),
+      })
+      .refine((x) => !x.end || x.end >= x.start, { message: 'end is before start', path: ['end'] }),
+});
+
+export const collections = { profile, experience };

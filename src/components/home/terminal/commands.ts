@@ -416,7 +416,7 @@ export function run(line: string, env: Env): Result {
   return res ?? {};
 }
 
-export const SUGGESTIONS = ['help', 'cat about.md', 'ls', 'ls -a', 'neofetch', 'git log', 'history', 'whoami'];
+export const SUGGESTIONS = ['help', 'cat about.md', 'cd experience', 'ls', 'ls -a', 'neofetch', 'git log', 'history', 'whoami'];
 
 const FLAGS: Record<string, string[]> = {
   ls: ['-l', '-a', '-la'], tail: ['-n'], head: ['-n'], grep: ['-i', '-v', '-c'], wc: ['-l', '-w', '-c'],

@@ -29,6 +29,14 @@ The stored pick lives in `localStorage` under `mode`; an inline script in `Base.
 | `--soft` | `#f1f2f3` | `#1d1f23` | Chip and pill fills, subtle panels |
 | `--accent` | `#c2410c` | `#fb8a4c` | Links, focus ring |
 
+### Section colors
+
+Every section, and everything that points at it, uses the same hue through `--sc`.
+
+| Section | Light | Dark |
+|---|---|---|
+| Experience | `#2457c5` | `#86a8ff` |
+
 ### Graphite and tty (terminal surfaces)
 
 Identical in both modes: `--g-acc` (prompt, keys), `--g-ok` (prompt user), `--g-info` (directories), and the `--tty-*` screen colors.
@@ -50,7 +58,8 @@ Use `font-variant-numeric: tabular-nums` wherever digits line up.
 
 ## Shape and spacing
 
-- Spacing steps: 4, 8, 12, 16, 24, 32, 44, 72 px; sections are separated by 72px.
+- Spacing steps: 4, 8, 12, 16, 24, 32, 44, 72 px; sections are separated by 72px (`--section-gap`).
+- A section (`.section`) starts with that space and its label (`.section-label`, mono uppercase in the section color) alone, with no rule under it; hairlines only divide entries inside a section.
 - Radius: 6px for controls, 8px for cards, 10 to 12px for panels and popovers, 999px for pills.
 - Borders are 1px `--line`; cards get a border, never a shadow, except floating layers.
 - Page gutter is at least 16px, written with `max(16px, env(safe-area-inset-*))`.
@@ -62,6 +71,7 @@ Use `font-variant-numeric: tabular-nums` wherever digits line up.
 ### Header
 
 Sticky at the top of every page: the name, linking home, on the left, and the mode toggle on the right, both on the page frame's edges.
+Once the hero has scrolled under it, it gains a 1px `--line` bottom border.
 The toggle is a bare icon with no box that names what a click switches to: a moon in light mode, a sun in dark mode.
 Its bar is light glass: the page background at 72% over a 14px blur, reaching the viewport edges; solid under `prefers-reduced-transparency`.
 
@@ -71,16 +81,23 @@ One terminal window 800px wide and centered (474px tall with its 34px header bar
 It is a Linux window: a header bar titled `<login>@ubuntu: ~` with minimize, maximize and close buttons, over translucent dark glass (blur 22px) on the plain page background; solid under `prefers-reduced-transparency`.
 The login is the profile's first name, lowercase and without accents.
 
-It opens straight on `neofetch`: the profile's initials spinning in 3D ASCII on the left and, on the right, Role, Uptime (years since `careerStart`), Based (with the visitor-side local time in the profile's `timeZone`), Languages and Links, then the color swatches and "type help to look around".
+It opens straight on `neofetch`: the profile's initials spinning in 3D ASCII on the left and, on the right, Role, Uptime (years since `careerStart`), Stack, Based (with the visitor-side local time in the profile's `timeZone`), Languages and Links, then the color swatches and "type help to look around".
 The build renders the same screen without the clock, so it reads as finished before JS runs.
-Rows for experience, education and projects join as those sections arrive.
+Stack comes from the current roles; rows for education and projects join as those sections arrive.
 
 The prompt is a small bash-like shell over the site content:
-- Files: `about.md` and `.bashrc` for now; each section adds its own directory.
+- Files: `about.md`, `.bashrc` and `experience/`; each section adds its own directory.
 - Commands: `help`, `ls`, `cd`, `cat`, `open` (profile links by name), `neofetch`, `git log` and `git status` (the commit the page was built from), `history`, `clear`, `exit`, plus `pwd`, `whoami`, `date`, `echo`, `man`, `which` and `head`, `tail`, `grep`, `wc`, `sort` behind pipes.
 - Line editing: block cursor, grey suggestion from history then common commands (accept with → or End, or a tap), Tab completion with a menu that Tab cycles, ↑ ↓ filtered by what was typed, Ctrl+C, Ctrl+L, Ctrl+A, Ctrl+E, Ctrl+U, Ctrl+K; history persists in `localStorage["terminal-history"]`.
 - The art spins only while on screen and the tab is visible, and holds still under `prefers-reduced-motion`.
 - Tab on an empty prompt moves focus on, so the terminal never traps the keyboard; a swipe on it scrolls the page.
+
+### Experience
+
+Titled "Work experience"; one Markdown file per role in `content/experience/`, whose body is the summary paragraph and then the highlights as a list.
+One entry per role, without a frame, separated by hairlines: a 48px logo with a 1px `--line` border (the organization's monogram on a soft tile when there is none), the role in Plex Serif with the period on the same line, the organization (linked when it has a URL), place and mode, then tenure in years and the employment type in mono, the summary, highlights as square bullets in the section color, and the stack as chips.
+Current roles come first, longest-running first, then past roles by most recent end; there is no manual order.
+The terminal lists each role under `experience/`, and neofetch's Stack row is the current roles' stacks.
 
 ### Footer
 

@@ -7,6 +7,9 @@
   --soft: #f1f2f3;
   --accent: #c2410c;
 
+  /* Each section, and everything that points at it, shares one hue. */
+  --c-experience: #2457c5;
+
   /* Graphite: code and terminal accents, identical in both modes. */
   --g-acc: #ffb15c;
   --g-ok: #7fe0a8;
@@ -31,6 +34,7 @@
   --gutter-l: max(16px, env(safe-area-inset-left));
   --gutter-r: max(16px, env(safe-area-inset-right));
   --radius-control: 6px;
+  --radius-card: 8px;
   --radius-panel: 12px;
   --section-gap: 72px;
   /* One frame for header, page and footer. */
@@ -46,6 +50,8 @@
   --line: #2a2d32;
   --soft: #1d1f23;
   --accent: #fb8a4c;
+
+  --c-experience: #86a8ff;
 
   --tty-glass: rgba(36, 39, 46, 0.55);
   --tty-edge: rgba(255, 255, 255, 0.08);

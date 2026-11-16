@@ -13,6 +13,7 @@ export interface NeofetchInfo {
   languages?: string;
   /** YYYY-MM of the first software role. */
   careerStart?: string;
+  stack: string[];
   links: { label: string; url: string }[];
 }
 
@@ -33,6 +34,7 @@ type Row = { key: string; text: string; html?: string };
 export function rows(info: NeofetchInfo, now: Date, withClock = false): Row[] {
   const out: Row[] = [{ key: 'Role', text: info.role }];
   if (info.careerStart) out.push({ key: 'Uptime', text: uptime(info.careerStart, now) });
+  if (info.stack.length) out.push({ key: 'Stack', text: info.stack.join(', ') });
   const clock = withClock ? ` · ${localTime(now, info.timeZone)} (${zoneLabel(now, info.timeZone)})` : '';
   out.push({ key: 'Based', text: info.location + clock });
   if (info.languages) out.push({ key: 'Languages', text: info.languages });

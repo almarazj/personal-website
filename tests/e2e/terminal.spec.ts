@@ -55,7 +55,7 @@ test('line editing: completion, suggestions, history and shortcuts', async ({ pa
   await page.keyboard.press('Enter');
   await page.keyboard.type('ls');
   await page.keyboard.press('Enter');
-  await expect(out(page).locator('.blk').last()).toHaveText('about.md');
+  await expect(out(page).locator('.blk').last()).toContainText('about.md');
 
   await page.keyboard.press('ArrowUp');
   await expect(input(page)).toHaveValue('ls');

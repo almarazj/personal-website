@@ -43,6 +43,37 @@ a {
   margin-inline: auto;
 }
 
+/* A section starts with space and its label alone; lines only divide entries inside it. */
+.section {
+  padding-top: var(--section-gap);
+}
+
+.section-label {
+  margin: 0 0 26px;
+  font: 600 15px/1.4 var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--sc);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: inline-block;
+  padding: 0 7px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font: 400 12px/1.6 var(--font-mono);
+  color: var(--muted);
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
