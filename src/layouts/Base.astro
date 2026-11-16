@@ -3,6 +3,7 @@ import '../styles/tokens.css';
 import '../styles/base.css';
 import Footer from '../components/site/Footer.astro';
 import Header from '../components/site/Header.astro';
+import Palette from '../components/site/Palette.astro';
 
 interface Props {
   title: string;
@@ -47,5 +48,6 @@ const fonts =
     <Header />
     <slot />
     <Footer />
+    <Palette />
   </body>
 </html>

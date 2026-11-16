@@ -10,6 +10,7 @@ Each component section below is added in the same pull request that brings the c
 - Each content type looks different at a glance: its own color, icon and component.
 - The page follows the system's light or dark scheme until the reader picks one with the header toggle; that pick is stored and wins from then on.
 - Motion is small (250 ms or less) and always disabled under `prefers-reduced-motion`.
+- Scrolling to an anchor, from a link, the palette or a shortcut, is smooth (it jumps under reduced motion) and stops 72px from the top so the sticky header never covers the target.
 - English only, with `lang="en"` so browsers offer translation.
 - Personal data comes from `content/`, never from code: even the terminal's login and the letters it draws derive from the profile name.
 - Interactive pieces are islands loaded with `client:visible`; everything else ships zero JS.
@@ -141,12 +142,20 @@ Below it, "Quick questions" as rows separated by hairlines: the question in mono
 The icon is one of a fixed set (book, book-open, film, music, flag, ball), checked by the schema.
 The terminal's `about.md` carries the bio and opens the section.
 
+### Command palette
+
+Opens with `/` (the hint shown in the header field), `⌘K` or `Ctrl+K`, or the header's "Search or jump to..." field, centered between the name and the mode toggle (an icon button on phones).
+Desktop: a centered modal, results grouped (Sections, Experience, Projects, Education, About, Links, Actions) with a dot in the section color, each result showing its direct shortcut, and a cheat sheet at the bottom.
+Phone: a bottom sheet with group filter chips and tall rows.
+The index is `/search-index.json`, built from `content/` at build time and fetched on first open; only site paths, PDFs, https links and two actions are ever followed.
+Shortcuts, ignored while typing in a field: `g e` experience, `g d` education, `g p` projects, `g a` about, `j`/`k` next and previous section, `t` theme, `g g` top.
+
 ### Footer
 
-One row on the page frame, below a 1px `--line` rule and 72px after the content: "© year name" and the profile links, separated by middle dots, on the left.
-On the right, the commit the page was built from as a mono stamp linking to it on GitHub, then "↑ back to top".
-On phones the row wraps and the stamp goes under the links.
-
+Two rows on the page frame, below a 1px `--line` rule and 72px after the content.
+Row 1: "© year name" and the profile links, separated by middle dots, on the left; on the right, the commit the page was built from as a mono stamp linking to it on GitHub.
+Row 2, in mono `--faint`: the keyboard shortcuts on the left (hidden on touch screens) and "↑ back to top" on the right.
+On phones each row wraps.
 ## Interaction rules
 
 - Every interactive element has a visible focus ring: 2px `--accent`, offset 2px.
