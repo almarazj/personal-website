@@ -1,6 +1,6 @@
 ---
 title: "Synthetic speech detection"
-summary: "Compared existing anti-spoofing models for telling real Latin American Spanish speech from synthetic speech, and measured how accent and noise affect detection."
+summary: "Compared anti-spoofing models at telling real Latin American Spanish speech from synthetic speech, and measured how accent and noise affect detection."
 year: 2024
 context: Work
 domains: [ML, DSP]

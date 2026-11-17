@@ -1,6 +1,6 @@
 ---
 title: "juanalmaraz.dev"
-summary: "This site: a static portfolio built with Astro, where content and code live apart so an agent can update it through pull requests, deployed to AWS on every merge."
+summary: "This site: a static Astro portfolio where content and code live apart, so an agent can update it through pull requests; each tagged release deploys to AWS."
 year: 2026
 context: Personal
 domains: [Backend]

@@ -8,10 +8,10 @@ import Projects from '../components/home/Projects.astro';
 import SectionPill from '../components/site/SectionPill.astro';
 import Base from '../layouts/Base.astro';
 
-const { name, description } = (await getEntry('profile', 'profile'))!.data;
+const { name, role, description } = (await getEntry('profile', 'profile'))!.data;
 ---
 
-<Base title={name} description={description}>
+<Base title={`${name} · ${role}`} description={description}>
   <main class="page">
     <Hero />
     <Experience />
