@@ -52,6 +52,13 @@
     background: rgb(20 21 24 / 0.45);
     animation: palette-fade 220ms ease-out;
   }
+  .palette[data-opening] {
+    opacity: 0;
+  }
+  .palette[data-opening]::backdrop {
+    animation: none;
+    opacity: 0;
+  }
   .palette[data-closing] {
     pointer-events: none;
   }
