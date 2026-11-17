@@ -10,6 +10,7 @@ Each component section below is added in the same pull request that brings the c
 - Each content type looks different at a glance: its own color, icon and component.
 - The page follows the system's light or dark scheme until the reader picks one with the header toggle; that pick is stored and wins from then on.
 - Motion is small (250 ms or less) and always disabled under `prefers-reduced-motion`.
+- Animations that CSS alone cannot coordinate (layout, scroll and staggered elements together) use `motion` (motion.dev), never a hand-rolled loop.
 - Scrolling to an anchor, from a link, the palette or a shortcut, is smooth (it jumps under reduced motion) and stops 72px from the top so the sticky header never covers the target.
 - English only, with `lang="en"` so browsers offer translation.
 - Personal data comes from `content/`, never from code: even the terminal's login and the letters it draws derive from the profile name.
@@ -120,6 +121,14 @@ One file per project in `content/projects/`: frontmatter for the card and an `or
 One grid of cover cards, as many to a row as fit at 230px minimum (four at full width, one on phones).
 Each card: a 16:9 cover (the project's `cover`, else a line drawing for its first domain in the projects color), then the year on the left and, on the right, a 6px green live dot (`.live-dot`) that sends out a 4px ripple lasting 0.5s (fast start, long fade: `cubic-bezier(0.16, 1, 0.3, 1)`), then rests 1s (only for live projects; a "Live in production" tooltip on hover and keyboard focus; still under reduced motion) and the context badge (Work, Client, Personal, Academic); the title in Plex Serif linking to `/projects/<id>`, the domains in mono with "confidential" when it applies, a 3-line summary, and up to three stack chips plus "+n".
 Above the grid, a domain filter of `.tag` choices with counts, "All" first and only domains that have projects; it is radios and CSS `:has()`, so it works without JavaScript.
+On wide screens the grid shows one full row, and the next row peeks out 96px tall, faded and inert, to show there is more; "Show more (n left)" opens one more row per click and becomes "Show less" once everything is open.
+The grid is a window whose bottom 96px fade out; opening and folding move that edge over 250ms (`cubic-bezier(0.16, 1, 0.3, 1)`), so the peeking row is uncovered in place, never squeezed.
+On "Show more", rows that were not on screen at all rise 8px and fade in, 40ms apart; once nothing is left below, the fade shrinks away with the edge.
+On "Show less", the cards that fold away fade out, last first, while the edge rises and the fade grows back over the new peeking row; the page scrolls with it so the button stays where it was on screen, and the reader does not lose their place.
+Under reduced motion both are instant.
+The rows shown at first and per click are set in `REVEAL` at the top of `Projects.astro`; the filter, a column count change and the phone breakpoint start over from the first rows, and a link to a folded card (like "← Projects") opens enough rows to show it.
+On phones the cards sit in one row that slides sideways with scroll snapping, each 82% wide so the next one shows at the edge, and there is no button.
+Without JavaScript every project is shown.
 Confidential work never uses a screenshot as its cover; a diagram is fine.
 Diagrams are SVG exported from Excalidraw, kept next to their `.excalidraw` source in `content/projects/diagrams/` and served as is; screenshots are raster, converted to WebP and never shown wider than their natural size.
 
