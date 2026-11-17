@@ -1,5 +1,4 @@
 ---
-import { getImage } from 'astro:assets';
 import { getEntry, render } from 'astro:content';
 import type { ANSWER_ICONS } from '../../content.config';
 import { external } from '../../lib/links';
@@ -7,14 +6,7 @@ import PhotoStack from './PhotoStack.astro';
 
 const about = (await getEntry('about', 'about'))!;
 const { Content } = await render(about);
-const { questions } = about.data;
-// The polaroid's photo is at most 368px wide; 1x and 2x variants are enough.
-const photos = await Promise.all(
-  about.data.photos.map(async (p) => {
-    const img = await getImage({ src: p.image, width: 368, densities: [1, 2] });
-    return { src: img.src, srcset: img.srcSet.attribute, alt: p.alt, caption: p.caption };
-  }),
-);
+const { questions, photos } = about.data;
 
 // 24px stroke icons; the color says what kind of answer it is.
 const icons: Record<(typeof ANSWER_ICONS)[number], { color: string; svg: string }> = {
