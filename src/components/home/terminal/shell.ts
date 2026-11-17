@@ -1,3 +1,4 @@
+import { opensNewTab } from '../../../lib/links';
 import { candidates, type Candidate, type Env, promptHTML, run, SUGGESTIONS, toHTML } from './commands';
 import type { TerminalData } from './data';
 import { commonPrefix, completionTarget, type HistoryCursor, stepHistory, suggest } from './editor';
@@ -143,8 +144,8 @@ export class Shell {
       target?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
       return;
     }
-    if (href.startsWith('/')) location.assign(href);
-    else window.open(href, '_blank', 'noopener');
+    if (opensNewTab(href)) window.open(href, '_blank', 'noopener');
+    else location.assign(href);
   }
 
   private setFocused(on: boolean) {

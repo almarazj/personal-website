@@ -24,3 +24,10 @@ test('the new tab note is never visible', async ({ page }) => {
     .evaluate((a) => getComputedStyle(a, '::after').width);
   expect(['0px', 'auto']).toContain(after);
 });
+
+test('/resume.pdf serves a PDF', async ({ request }) => {
+  const res = await request.get('/resume.pdf');
+  expect(res.status()).toBe(200);
+  expect(res.headers()['content-type']).toBe('application/pdf');
+  expect((await res.body()).subarray(0, 5).toString()).toBe('%PDF-');
+});

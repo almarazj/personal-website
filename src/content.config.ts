@@ -24,7 +24,8 @@ const profile = defineCollection({
     languages: z.string().optional(),
     // YYYY-MM of the first software role; the hero counts years from it.
     careerStart: month.optional(),
-    links: z.array(z.object({ label: z.string(), url: z.url() })),
+    // A site path such as /resume.pdf, or an absolute URL.
+    links: z.array(z.object({ label: z.string(), url: z.union([z.string().regex(/^\/(?!\/)/), z.url()]) })),
   }),
 });
 
