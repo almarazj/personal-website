@@ -16,5 +16,7 @@ export default defineConfig({
     url: `http://localhost:${port}`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
+    // Builds as a tag-triggered CodeBuild run does, so the footer shows a release.
+    env: { CODEBUILD_WEBHOOK_TRIGGER: 'tag/v0.0.0-e2e' },
   },
 });

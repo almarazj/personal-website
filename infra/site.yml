@@ -183,7 +183,7 @@ Resources:
           - - Type: EVENT
               Pattern: PUSH
             - Type: HEAD_REF
-              Pattern: ^refs/heads/main$
+              Pattern: ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$
       Artifacts:
         Type: NO_ARTIFACTS
       Environment:

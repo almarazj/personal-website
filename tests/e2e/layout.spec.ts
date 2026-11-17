@@ -27,7 +27,7 @@ test('no horizontal scroll on a phone', async ({ page }) => {
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
 });
 
-test('footer links out and stamps the commit the page was built from', async ({ page }) => {
+test('footer links out and stamps the release and commit the page was built from', async ({ page }) => {
   await page.goto('/');
   const footer = page.getByRole('contentinfo');
   await expect(footer.locator('p').first()).toHaveText(/^© \d{4} \S/);
@@ -36,6 +36,9 @@ test('footer links out and stamps the commit the page was built from', async ({ 
     'href',
     /^https:\/\/github\.com\/[^/]+\/[^/]+\/commit\/[0-9a-f]{40}$/,
   );
+  const release = footer.getByTitle('Release this page was built from');
+  await expect(release).toHaveText('v0.0.0-e2e');
+  await expect(release).toHaveAttribute('href', /^https:\/\/github\.com\/[^/]+\/[^/]+\/tree\/v0\.0\.0-e2e$/);
 });
 
 test('an unknown path answers 404 with a way back home', async ({ page }) => {

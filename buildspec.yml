@@ -1,4 +1,4 @@
-# Deploy, run by CodeBuild on every push to main.
+# Deploy, run by CodeBuild on every pushed v* tag.
 version: 0.2
 
 phases:
