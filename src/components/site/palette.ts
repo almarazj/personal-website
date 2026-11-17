@@ -42,6 +42,8 @@ export function initPalette(dialog: HTMLDialogElement) {
   let filter: string | null = null;
   let opener: HTMLElement | null = null;
   let failed = false;
+  let loading: Promise<void> | null = null;
+  let opening = false;
 
   const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls: string, text?: string) => {
     const node = document.createElement(tag);
@@ -80,7 +82,7 @@ export function initPalette(dialog: HTMLDialogElement) {
   function render() {
     list.replaceChildren();
     results = search(index ?? [], input.value).filter((i) => !filter || i.group === filter);
-    status.textContent = failed ? 'Search is unavailable right now.' : index ? (results.length ? '' : 'No results.') : '';
+    status.textContent = failed ? 'Search is unavailable right now.' : index ? (results.length ? '' : 'No results.') : loading ? 'Loading...' : '';
     let group = '';
     let box: HTMLElement | null = null;
     results.forEach((item, n) => {
@@ -113,16 +115,21 @@ export function initPalette(dialog: HTMLDialogElement) {
     setActive(Math.min(active, Math.max(results.length - 1, 0)));
   }
 
-  async function load() {
-    if (index) return;
+  // One request in flight at a time; a failed one is forgotten so the next open retries.
+  function load() {
+    if (index) return Promise.resolve();
+    return (loading ??= fetchIndex());
+  }
+
+  async function fetchIndex() {
     failed = false;
-    status.textContent = 'Loading...';
     try {
       const res = await fetch('/search-index.json');
       if (!res.ok) throw new Error(String(res.status));
       index = (await res.json()) as PaletteItem[];
     } catch {
       failed = true;
+      loading = null;
       render();
       return;
     }
@@ -159,9 +166,13 @@ export function initPalette(dialog: HTMLDialogElement) {
     if (rows.length) animate(rows, { opacity: [0, 1], y: [-6, 0] }, { duration: 0.2, delay: (i: number) => 0.08 + Math.min(i * 0.02, 0.16), ease: EASE_OUT });
   }
 
-  function open(from?: HTMLElement | null) {
-    if (dialog.open) return;
+  async function open(from?: HTMLElement | null) {
+    if (dialog.open || opening) return;
     opener = from ?? (document.activeElement as HTMLElement | null);
+    // Rows landing mid-entrance make the panel jump, so give the index a moment; a slow network still gets the panel quickly.
+    opening = true;
+    await Promise.race([load(), new Promise((done) => setTimeout(done, 300))]);
+    opening = false;
     input.value = '';
     filter = null;
     active = 0;
@@ -171,7 +182,6 @@ export function initPalette(dialog: HTMLDialogElement) {
     renderChips();
     render();
     enter();
-    void load();
   }
 
   let closing = false;
@@ -260,6 +270,9 @@ export function initPalette(dialog: HTMLDialogElement) {
       e.preventDefault();
       if (dialog.open) input.focus();
       else open();
-    } else if (!dialog.open) shortcuts(e);
+    } else if (!dialog.open && !opening) shortcuts(e);
   });
+
+  // Fetched ahead of the first open, which would otherwise animate an empty panel.
+  (window.requestIdleCallback ?? setTimeout)(() => void load());
 }
