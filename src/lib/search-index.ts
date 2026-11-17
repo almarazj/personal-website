@@ -5,6 +5,7 @@ import { paperUrl } from './papers';
 
 const short = (s: string, n = 90) => (s.length > n ? `${s.slice(0, n - 1).trimEnd()}…` : s);
 const host = (url: string) => new URL(url).hostname.replace(/^www\./, '');
+const where = (url: string) => (url.startsWith('/') ? url : host(url) + url.replace(/^https?:\/\/[^/]+/, '').replace(/\/$/, ''));
 
 /** Everything the command palette can find, built from content at build time. */
 export async function buildSearchIndex(): Promise<PaletteItem[]> {
@@ -35,7 +36,7 @@ export async function buildSearchIndex(): Promise<PaletteItem[]> {
     ...(about?.data.questions.length
       ? [{ group: 'About', label: 'Quick questions', hint: about.data.questions.map((q) => `${q.q} ${q.a}`).join(' · '), target: '/#about-questions' }]
       : []),
-    ...(profile?.data.links ?? []).map((l) => ({ group: 'Links', label: l.label, hint: host(l.url) + l.url.replace(/^https?:\/\/[^/]+/, '').replace(/\/$/, ''), target: l.url })),
+    ...(profile?.data.links ?? []).map((l) => ({ group: 'Links', label: l.label, hint: where(l.url), target: l.url })),
     { group: 'Actions', label: 'Switch theme', hint: 'Light or dark', target: 'action:theme', keys: ['t'] },
     { group: 'Actions', label: 'Back to top', hint: 'Scroll to the hero', target: 'action:top', keys: ['g', 'g'] },
   ];

@@ -1,7 +1,7 @@
 import { defineConfig } from '@playwright/test';
 
-// E2E_PORT lets the suite run beside a dev server on 4321.
-const port = Number(process.env.E2E_PORT ?? 4321);
+// Off Astro's default 4321 so the suite runs beside a dev server; E2E_PORT overrides it.
+const port = Number(process.env.E2E_PORT ?? 4322);
 
 export default defineConfig({
   testDir: 'tests/e2e',

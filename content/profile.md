@@ -11,4 +11,6 @@ links:
     url: https://github.com/almarazj
   - label: LinkedIn
     url: https://www.linkedin.com/in/juan-almaraz/
+  - label: Resume
+    url: /resume.pdf
 ---

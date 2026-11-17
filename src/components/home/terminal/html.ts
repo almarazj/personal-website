@@ -1,11 +1,12 @@
+import { opensNewTab } from '../../../lib/links';
+
 /** Escapes text for element content; attribute values go through `attr`. */
 export const esc = (s: unknown) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 export const attr = (s: string) => esc(s).replace(/"/g, '&quot;');
 export const span = (cls: string, text: unknown) => `<span class="${cls}">${esc(text)}</span>`;
 
-const external = (href: string) => /^https?:/.test(href);
 export const link = (href: string, label: string) =>
-  `<a href="${attr(href)}"${external(href) ? ' target="_blank" rel="noopener"' : ''}>${esc(label)}</a>`;
+  `<a href="${attr(href)}"${opensNewTab(href) ? ' target="_blank" rel="noopener"' : ''}>${esc(label)}</a>`;
 
 /** Turns http(s) URLs inside already escaped text into links; quotes and angle brackets end a URL. */
 export const linkify = (escaped: string) =>

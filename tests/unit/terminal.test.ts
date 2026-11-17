@@ -114,6 +114,10 @@ describe('neofetch', () => {
     expect(html).toContain('<a href="https://github.com/ana" target="_blank" rel="noopener">github</a>');
     expect(html).toContain('ana</span>@<span class="c-acc b">ubuntu');
   });
+  it('opens PDF links in a new tab, like external ones', () => {
+    const html = neofetchHTML({ ...info, links: [{ label: 'Resume', url: '/resume.pdf' }] }, NOW, 'art');
+    expect(html).toContain('<a href="/resume.pdf" target="_blank" rel="noopener">resume</a>');
+  });
 });
 
 describe('experience', () => {

@@ -199,6 +199,7 @@ Every page shares it.
 
 Two rows on the page frame, below a 1px `--line` rule and 72px after the content.
 Row 1: "© year name" and the profile links, separated by middle dots, on the left; on the right, a mono stamp split in cells: the release tag the page was built from, when there is one, and its commit, each linking to it on GitHub.
+The resume is `content/resume.pdf`, served at the stable `/resume.pdf` and listed as a profile link, so the footer, neofetch, `open resume` and the palette all reach it.
 Row 2, in mono `--faint`: the keyboard shortcuts on the left (hidden on touch screens) and "↑ back to top" on the right.
 On phones each row wraps.
 ## Interaction rules
