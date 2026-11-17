@@ -75,6 +75,11 @@ Use `font-variant-numeric: tabular-nums` wherever digits line up.
 
 ## Components
 
+### Favicon
+
+`public/favicon.svg`: a Plex Serif SemiBold J (as a path, so it never waits for the font) and an orange cursor, on a fixed `#17191c` tile with 7px corners, the same in both modes so it stands out in light and dark tab bars.
+`public/apple-touch-icon.png` is the same art at 180px, square, since iOS rounds it.
+
 ### Header
 
 Sticky at the top of every page: the name, linking home, on the left, and the mode toggle on the right, both on the page frame's edges.
