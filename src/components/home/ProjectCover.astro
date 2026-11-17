@@ -23,7 +23,7 @@ const size = !crop && shown ? `width: ${shown}px` : undefined;
   {
     svg && p.cover ? (
       // A vector is sharp at any size, so it is served once instead of in density variants.
-      <img src={p.cover.src} alt={p.coverAlt!} width={p.cover.width} height={p.cover.height} style={size} loading={loading} decoding="async" />
+      <Image src={p.cover} alt={p.coverAlt!} width={p.cover.width} height={p.cover.height} style={size} loading={loading} />
     ) : p.cover ? (
       <Image src={p.cover} alt={p.coverAlt!} width={shown!} densities={[1, 2]} style={size} loading={loading} />
     ) : (
