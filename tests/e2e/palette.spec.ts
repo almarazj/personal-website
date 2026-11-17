@@ -161,3 +161,23 @@ test.describe('phone', () => {
     await expect(sheet.getByRole('combobox')).toBeInViewport();
   });
 });
+
+test('opened before the index arrives, the panel appears with its rows', async ({ page }) => {
+  await page.route('**/search-index.json', async (r) => {
+    await new Promise((done) => setTimeout(done, 150));
+    await r.continue();
+  });
+  // Count the rows at the instant the dialog opens, which is when the entrance animation starts.
+  await page.addInitScript(() => {
+    new MutationObserver((records) => {
+      for (const { target } of records) {
+        const d = target as HTMLDialogElement;
+        if (d.open && !('rowsAtOpen' in window)) Object.assign(window, { rowsAtOpen: d.querySelectorAll('[role="option"]').length });
+      }
+    }).observe(document, { subtree: true, attributeFilter: ['open'] });
+  });
+  await page.goto('/');
+  await page.keyboard.press('/');
+  await expect(modal(page)).toBeVisible();
+  expect(await page.evaluate(() => (window as unknown as { rowsAtOpen: number }).rowsAtOpen)).toBeGreaterThan(0);
+});

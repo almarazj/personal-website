@@ -7,6 +7,7 @@ import PhotoStack from './PhotoStack.astro';
 const about = (await getEntry('about', 'about'))!;
 const { Content } = await render(about);
 const { questions, photos } = about.data;
+const signature = (await getEntry('profile', 'profile'))!.data.name.split(' ')[0];
 
 // 24px stroke icons; the color says what kind of answer it is.
 const icons: Record<(typeof ANSWER_ICONS)[number], { color: string; svg: string }> = {
@@ -20,11 +21,24 @@ const icons: Record<(typeof ANSWER_ICONS)[number], { color: string; svg: string 
 const host = (url: string) => new URL(url).hostname.replace(/^www\./, '');
 ---
 
-<section id="about" class="section" style="--sc: var(--c-about)">
-  <h2 class="section-label">About</h2>
-  <div id="about-me" class:list={['intro', { solo: photos.length === 0 }]}>
-    {photos.length > 0 && <PhotoStack photos={photos} />}
-    <div class="bio"><Content /></div>
+<section id="about" class="section about" style="--sc: var(--c-about)">
+  <div class="track" data-about-track>
+    <div class="stage" data-about-stage>
+      <h2 class="section-label">About</h2>
+      <div id="about-me" class:list={['intro', { solo: photos.length === 0 }]}>
+        {photos.length > 0 && <PhotoStack photos={photos} />}
+        <div class="note-slot">
+          <div class="bio note" data-about-note>
+            <span class="tape" aria-hidden="true"></span>
+            <Content />
+            <p class="sign" aria-hidden="true" data-sign>
+              {signature}
+              <svg viewBox="0 0 92 14"><path d="M2 9 C 22 3, 46 13, 70 6 S 88 4, 90 5"></path></svg>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   {
@@ -70,17 +84,115 @@ const host = (url: string) => new URL(url).hostname.replace(/^www\./, '');
   .intro.solo {
     grid-template-columns: 1fr;
   }
-  .bio {
-    max-width: 68ch;
+  /* Wide screens pin the section over a scroll track that writes the note; any jump to it lands at the track's end, note written. */
+  @media (min-width: 680px) and (prefers-reduced-motion: no-preference) {
+    .about {
+      --track: 120vh;
+      scroll-margin-top: calc(-1 * var(--track));
+    }
+    /* Height in the content box, where a sticky child can travel; padding would not count. */
+    .track::after {
+      content: '';
+      display: block;
+      height: var(--track);
+    }
+    .stage {
+      position: sticky;
+      top: 72px;
+    }
   }
-  .bio :global(a) {
-    color: var(--sc);
+  .note-slot {
+    display: flex;
+    justify-content: center;
+    min-width: 0;
   }
-  .bio :global(p) {
-    margin: 0 0 12px;
+  /* A sheet of graph paper taped beside the polaroids, written in black ink; it stays light in dark mode, like their frames. */
+  .note {
+    --lh: 34px;
+    --paper: #fbfbf8;
+    --grid: #d6dfe8;
+    --ink: #1a1a1c;
+    position: relative;
+    width: 100%;
+    max-width: 520px;
+    padding: calc(var(--lh) * 1.5) 30px var(--lh) 34px;
+    rotate: -1deg;
+    color: var(--ink);
+    font: 400 29px/var(--lh) var(--font-hand);
+    /* The shadow follows the paper, not a box. */
+    filter: drop-shadow(0 2px 5px rgb(0 0 0 / 0.13));
   }
-  .bio :global(p:last-child) {
-    margin-bottom: 0;
+  :global([data-mode='dark']) .note {
+    --paper: #e9e8e4;
+    --grid: #cbd2da;
+  }
+  .note::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-color: var(--paper);
+    background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: calc(var(--lh) / 2) calc(var(--lh) / 2);
+    /* Puts a grid line under each line of text. */
+    background-position: 0 calc(var(--lh) * 1.5 - 9px);
+  }
+  .tape {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    width: 112px;
+    height: 30px;
+    translate: -50% 0;
+    rotate: 3deg;
+    background: rgb(236 226 196 / 0.78);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+  }
+  .note :global(p) {
+    margin: 0;
+  }
+  .note :global(a) {
+    color: inherit;
+    text-decoration: underline 1.5px;
+    text-underline-offset: 3px;
+  }
+  .note :global(del) {
+    text-decoration: line-through 2px;
+    transition: text-decoration-color 260ms ease-out;
+  }
+  .sign {
+    margin-top: calc(var(--lh) / 2) !important;
+    font-size: 42px;
+    text-align: right;
+  }
+  .sign svg {
+    display: block;
+    width: 92px;
+    height: 14px;
+    margin: -4px 0 0 auto;
+    overflow: visible;
+  }
+  .sign path {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-dasharray: 120;
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 420ms ease-out;
+  }
+  /* Until the writing reaches them, the lines under and through the words wait too. */
+  .note[data-written] :global(a:not([data-written])) {
+    text-decoration-color: transparent;
+  }
+  .note[data-written] :global(del:not([data-written])) {
+    text-decoration-color: transparent;
+  }
+  .note[data-written] .sign:not([data-written]) path {
+    stroke-dashoffset: 120;
+  }
+  :global(::highlight(unwritten)) {
+    color: transparent;
   }
   .sub {
     margin: 40px 0 8px;
@@ -137,10 +249,19 @@ const host = (url: string) => new URL(url).hostname.replace(/^www\./, '');
   @media (max-width: 679px) {
     .intro {
       grid-template-columns: 1fr;
-      gap: 24px;
+      gap: 40px;
     }
     .row {
       grid-template-columns: 1fr;
     }
   }
 </style>
+
+<script>
+  import { initAboutNote } from './about-note';
+
+  const note = document.querySelector<HTMLElement>('[data-about-note]');
+  const track = document.querySelector<HTMLElement>('[data-about-track]');
+  const stage = document.querySelector<HTMLElement>('[data-about-stage]');
+  if (note && track && stage) initAboutNote(note, track, stage);
+</script>

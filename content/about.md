@@ -29,4 +29,4 @@ questions:
     icon: music
 ---
 
-Welcome, stranger! Looks like you've found my personal website. I'm Juan, born and based in Buenos Aires. I got my first guitar at eight; years later, the urge to understand what happens to sound after it leaves the amp took me to sound engineering. Somewhere along the way, curiosity pulled me into software, and it hasn't let go. When I'm not coding, I'm on my bike, at a Boca game, or rating movies on [Letterboxd](https://letterboxd.com/juanal12/) a little too seriously.
+Welcome, stranger! Looks like you've found my personal website. I'm Juan, born and based in Buenos Aires. I got my first guitar at eight; years later, the urge to understand what happens to sound after it leaves the amp took me to sound engineering. Somewhere along the way, curiosity pulled me into software, and it hasn't let go. When I'm not coding, I'm on my bike, at a Boca game, or rating movies on [Letterboxd](https://letterboxd.com/juanal12/) ~~a little~~ way too seriously.

@@ -75,9 +75,15 @@ Use `font-variant-numeric: tabular-nums` wherever digits line up.
 
 ## Components
 
+### Favicon
+
+`public/favicon.svg`: a Plex Serif SemiBold J (as a path, so it never waits for the font) and an orange cursor, on a fixed `#17191c` tile with 7px corners, the same in both modes so it stands out in light and dark tab bars.
+`public/apple-touch-icon.png` is the same art at 180px, square, since iOS rounds it.
+
 ### Header
 
 Sticky at the top of every page: the name, linking home, on the left, and the mode toggle on the right, both on the page frame's edges.
+The name ends in the favicon's cursor: a 9x3px `--accent` bar that blinks every 1.1s, still under reduced motion.
 Once the hero has scrolled under it, it gains a 1px `--line` bottom border.
 The toggle is a bare icon with no box that names what a click switches to: a moon in light mode, a sun in dark mode.
 Its bar is light glass: the page background at 72% over a 14px blur, reaching the viewport edges; solid under `prefers-reduced-transparency`.
@@ -144,7 +150,13 @@ The terminal lists each project under `projects/`, `open` goes to its page, and 
 
 ### About
 
-From `content/about.md`: the body is the bio, a 68ch paragraph; the frontmatter lists the photos and the quick questions.
+From `content/about.md`: the body is the bio, handwritten on a note; the frontmatter lists the photos and the quick questions.
+Right of the photos (below them on phones), the bio is a sheet of graph paper (`#fbfbf8`, `#e9e8e4` in dark mode like the polaroid frames) up to 520px wide, tilted -1deg, with a strip of tape and a shadow that follows the paper.
+It is written in black ink in Nanum Pen Script (`--font-hand`, 29px on a 34px line, a grid line under each), its link underlined and any `~~struck~~` words crossed out in the same ink, and signed with the profile's first name over a pen stroke.
+The note writes itself as the reader scrolls: the unwritten tail is painted transparent with a CSS highlight, so the text stays whole in the DOM, and the underline, the strike and the signature's stroke appear once the writing reaches them.
+- From 680px wide, the section pins 72px from the top while the reader scrolls through a 120vh track, arriving with the note blank and leaving with it written; any jump to `#about` (index, palette, `j`/`k`, terminal) lands at the track's end, note written.
+- On phones nothing pins: the note writes while it crosses the screen, finishing before its top reaches the upper quarter.
+- Under reduced motion, or where CSS highlights are unsupported, there is no track and the note is written from the start.
 Left of the bio (above it on phones), the photos as a stack of polaroids 400px wide (narrower on small phones), the first on top: drag the top one away (over 90px) to send it to the back, or tap it, press Enter or the arrow keys, or use "Next photo"; a counter shows "1 / n" and screen readers hear each new photo's caption and alt text.
 Photos are square, in `content/about/`, with any camera metadata (GPS) stripped before they are committed; the caption is two to four words and the alt text describes the place.
 Below it, "Quick questions" as rows separated by hairlines: the question in mono on the left (200px), the answer in Plex Serif 19px with a 20px stroke icon in its color, and a muted detail line with an optional link.
@@ -153,14 +165,14 @@ The terminal's `about.md` carries the bio and opens the section.
 
 ### Section pill
 
-The home's index: a pill floating 16px above the bottom edge, centered, that names where the reader is and opens a menu to jump anywhere.
+The home's index: a pill floating 16px above the bottom edge, centered, that names the section being read and opens a menu to jump to any section.
 It takes no width from the page, and it is the same on every screen size.
 - It shows once the first section reaches the reading line (30% down the space under the header) and hides again over the hero, sliding 12px and fading over 200ms.
-- Inside, on light glass like the header's: a 7px dot and the section label in mono, both in the section color, then "· " and the entry being read (a role, the degree, Papers, Certs, Quick questions), cut with an ellipsis; at the page's end it names the last section and its last entry.
+- Inside, on light glass like the header's: a 7px dot and the section label in mono, both in the section color; at the page's end it names the last section.
 - A 2px line along its bottom edge, in the section color, fills as the whole page is read.
-- A click opens a menu above it: every section with its dot and entry count, the current one expanded with its entries and the current entry in the section color, and a footer with the `j` `k` and `/` keys (hidden on touch screens).
+- A click opens a menu above it: every section with its dot and entry count, the current one in `--fg`, and a footer with the `j` `k` and `/` keys (hidden on touch screens).
 - Escape or a click elsewhere closes it, and following a link closes it; Escape returns focus to the pill.
-- Entries are whatever carries `data-entry` and an `id` in a section, named by its `h3`, so the menu always matches the page.
+- Sections are the home's `section.section[id]`, named by their label, and the count is their `data-entry` elements, so the menu always matches the page.
 - Once the footer scrolls into view the pill rides up with it, staying 16px above its top edge, so it never covers it; the page still ends at the footer.
 - Without JavaScript it is not shown.
 
