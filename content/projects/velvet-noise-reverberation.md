@@ -1,6 +1,6 @@
 ---
 title: "Velvet noise in artificial reverberation"
-summary: "An online listening study, presented at the VIII JAAS (UNTREF, 2025), that finds how sparse velvet noise can be as a reverb tail before it stops sounding like white noise."
+summary: "A listening study, presented at VIII JAAS (UNTREF, 2025), on how sparse velvet noise can get as a reverb tail before it stops sounding like white noise."
 year: 2025
 context: Academic
 domains: [DSP, Acoustics]

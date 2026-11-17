@@ -1,6 +1,6 @@
 ---
 title: "Home savings plan platform"
-summary: "Backend for a home savings plan: subscriber onboarding, contracts, indexed monthly installments, QR payments and reconciliation, delinquency and home allocation."
+summary: "Backend for a home savings plan: onboarding, contracts, indexed monthly installments, QR payments and reconciliation, delinquency and home allocation."
 year: 2025
 context: Work
 domains: [Backend]

@@ -189,6 +189,12 @@ Motion drives it (Motion is small, 250ms or less per piece); under reduced motio
 The index is `/search-index.json`, built from `content/` at build time and fetched on first open; only site paths, PDFs, https links and two actions are ever followed.
 Shortcuts, ignored while typing in a field: `g e` experience, `g d` education, `g p` projects, `g a` about, `j`/`k` next and previous section, `t` theme, `g g` top.
 
+### Open Graph image
+
+`/og.png`, rendered at build time from the profile (`src/lib/og-image.ts`, satori and sharp with the Plex fonts from `@fontsource`): a 1200x630 card in the dark tokens, so it stands out in light and dark feeds.
+The domain in mono `--accent` on top, the name in Plex Serif 600 and the role in `--muted` in the middle, and below a `--line` rule the location in mono `--faint` with one bar per section color.
+Every page shares it.
+
 ### Footer
 
 Two rows on the page frame, below a 1px `--line` rule and 72px after the content.
