@@ -159,14 +159,14 @@ The terminal's `about.md` carries the bio and opens the section.
 
 ### Section pill
 
-The home's index: a pill floating 16px above the bottom edge, centered, that names where the reader is and opens a menu to jump anywhere.
+The home's index: a pill floating 16px above the bottom edge, centered, that names the section being read and opens a menu to jump to any section.
 It takes no width from the page, and it is the same on every screen size.
 - It shows once the first section reaches the reading line (30% down the space under the header) and hides again over the hero, sliding 12px and fading over 200ms.
-- Inside, on light glass like the header's: a 7px dot and the section label in mono, both in the section color, then "· " and the entry being read (a role, the degree, Papers, Certs, Quick questions), cut with an ellipsis; at the page's end it names the last section and its last entry.
+- Inside, on light glass like the header's: a 7px dot and the section label in mono, both in the section color; at the page's end it names the last section.
 - A 2px line along its bottom edge, in the section color, fills as the whole page is read.
-- A click opens a menu above it: every section with its dot and entry count, the current one expanded with its entries and the current entry in the section color, and a footer with the `j` `k` and `/` keys (hidden on touch screens).
+- A click opens a menu above it: every section with its dot and entry count, the current one in `--fg`, and a footer with the `j` `k` and `/` keys (hidden on touch screens).
 - Escape or a click elsewhere closes it, and following a link closes it; Escape returns focus to the pill.
-- Entries are whatever carries `data-entry` and an `id` in a section, named by its `h3`, so the menu always matches the page.
+- Sections are the home's `section.section[id]`, named by their label, and the count is their `data-entry` elements, so the menu always matches the page.
 - Once the footer scrolls into view the pill rides up with it, staying 16px above its top edge, so it never covers it; the page still ends at the footer.
 - Without JavaScript it is not shown.
 

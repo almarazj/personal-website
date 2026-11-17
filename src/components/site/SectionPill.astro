@@ -1,12 +1,11 @@
 ---
-/** Home only: names the section and entry being read, and opens a menu to jump to any of them. section-pill.ts fills it from the page. */
+/** Home only: names the section being read, and opens a menu to jump to any of them. section-pill.ts fills it from the page. */
 ---
 
 <div class="spill" hidden data-spill>
   <button type="button" class="spill-button" aria-expanded="false" aria-controls="spill-menu" aria-label="On this page" data-spill-button>
     <span class="spill-dot" aria-hidden="true"></span>
     <span class="spill-section" data-spill-section></span>
-    <span class="spill-entry" data-spill-entry></span>
     <svg class="spill-caret" viewBox="0 0 10 10" aria-hidden="true">
       <path d="M2 6.5 5 3.5 8 6.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
     </svg>
@@ -73,21 +72,6 @@
     color: var(--sc);
     white-space: nowrap;
   }
-  .spill-entry {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: var(--muted);
-  }
-  .spill-entry:empty {
-    display: none;
-  }
-  .spill-entry::before {
-    content: '·';
-    margin-right: 8px;
-    color: var(--faint);
-  }
   .spill-caret {
     flex: none;
     width: 10px;
@@ -146,7 +130,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .spill-menu > ul > li > a > span:first-child::before {
+  .spill-menu li > a > span:first-child::before {
     content: '';
     display: inline-block;
     width: 7px;
@@ -173,22 +157,6 @@
     font: 400 11px/1 var(--font-mono);
     font-variant-numeric: tabular-nums;
     color: var(--faint);
-  }
-  .spill-menu ul ul {
-    margin: 0 0 4px 13px;
-    padding-left: 10px;
-    border-left: 1px solid var(--sc);
-  }
-  .spill-menu ul ul[hidden] {
-    display: none;
-  }
-  .spill-menu ul ul a {
-    padding-block: 4px;
-    font-size: 13px;
-  }
-  .spill-menu ul ul a[data-current] {
-    color: var(--sc);
-    font-weight: 400;
   }
   .spill-keys {
     display: flex;
