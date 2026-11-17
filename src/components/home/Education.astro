@@ -40,7 +40,7 @@ const papers = (await getCollection('publications'))
   }
   {
     papers.length > 0 && (
-      <div id="edu-papers" class="row">
+      <div id="edu-papers" class="row" data-entry>
         <h3 class="key">Papers</h3>
         <ul class="papers">
           {papers.map((p) => (
@@ -69,7 +69,7 @@ const papers = (await getCollection('publications'))
   }
   {
     certificates.length > 0 && (
-      <div id="edu-certs" class="row">
+      <div id="edu-certs" class="row" data-entry>
         <h3 class="key">Certs</h3>
         <ul class="certs">
           {certificates.map(({ data: c }, i) => (

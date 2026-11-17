@@ -20,7 +20,7 @@ interface Props {
 const { id, logo, monogram, title, period, org, url, place, mode, meta, stack = [] } = Astro.props;
 ---
 
-<article id={id}>
+<article id={id} data-entry>
   {
     logo ? (
       <Image class="logo" src={logo} alt="" width={48} height={48} densities={[1, 2]} loading="lazy" />
