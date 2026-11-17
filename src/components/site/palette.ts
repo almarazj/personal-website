@@ -169,16 +169,20 @@ export function initPalette(dialog: HTMLDialogElement) {
   async function open(from?: HTMLElement | null) {
     if (dialog.open || opening) return;
     opener = from ?? (document.activeElement as HTMLElement | null);
-    // Rows landing mid-entrance make the panel jump, so give the index a moment; a slow network still gets the panel quickly.
-    opening = true;
-    await Promise.race([load(), new Promise((done) => setTimeout(done, 300))]);
-    opening = false;
     input.value = '';
     filter = null;
     active = 0;
     fit();
+    // The field takes focus at once so keys typed right after / are not lost to the page; the panel stays hidden meanwhile.
+    dialog.dataset.opening = '';
     dialog.showModal();
     input.focus();
+    // Rows landing mid-entrance make the panel jump, so give the index a moment; a slow network still gets the panel quickly.
+    opening = true;
+    await Promise.race([load(), new Promise((done) => setTimeout(done, 300))]);
+    opening = false;
+    delete dialog.dataset.opening;
+    if (!dialog.open) return;
     renderChips();
     render();
     enter();

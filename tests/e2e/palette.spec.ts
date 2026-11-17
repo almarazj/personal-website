@@ -167,17 +167,31 @@ test('opened before the index arrives, the panel appears with its rows', async (
     await new Promise((done) => setTimeout(done, 150));
     await r.continue();
   });
-  // Count the rows at the instant the dialog opens, which is when the entrance animation starts.
+  // Count the rows at the instant the open dialog stops being hidden, which is when the entrance animation starts.
   await page.addInitScript(() => {
     new MutationObserver((records) => {
       for (const { target } of records) {
         const d = target as HTMLDialogElement;
-        if (d.open && !('rowsAtOpen' in window)) Object.assign(window, { rowsAtOpen: d.querySelectorAll('[role="option"]').length });
+        if (d.open && !d.hasAttribute('data-opening') && !('rowsAtOpen' in window))
+          Object.assign(window, { rowsAtOpen: d.querySelectorAll('[role="option"]').length });
       }
-    }).observe(document, { subtree: true, attributeFilter: ['open'] });
+    }).observe(document, { subtree: true, attributeFilter: ['open', 'data-opening'] });
   });
   await page.goto('/');
   await page.keyboard.press('/');
   await expect(modal(page)).toBeVisible();
-  expect(await page.evaluate(() => (window as unknown as { rowsAtOpen: number }).rowsAtOpen)).toBeGreaterThan(0);
+  await expect.poll(() => page.evaluate(() => (window as unknown as { rowsAtOpen?: number }).rowsAtOpen)).toBeGreaterThan(0);
+});
+
+test('keys typed right after / land in the field while the index is still loading', async ({ page }) => {
+  await page.route('**/search-index.json', async (r) => {
+    await new Promise((done) => setTimeout(done, 250));
+    await r.continue();
+  });
+  await page.goto('/');
+  const mode = await page.locator('html').getAttribute('data-mode');
+  await page.keyboard.press('/');
+  await page.keyboard.type('tt');
+  await expect(page.getByRole('combobox')).toHaveValue('tt');
+  expect(await page.locator('html').getAttribute('data-mode')).toBe(mode);
 });
