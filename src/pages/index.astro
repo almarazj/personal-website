@@ -5,6 +5,7 @@ import Education from '../components/home/Education.astro';
 import Experience from '../components/home/Experience.astro';
 import Hero from '../components/home/Hero.astro';
 import Projects from '../components/home/Projects.astro';
+import SectionPill from '../components/site/SectionPill.astro';
 import Base from '../layouts/Base.astro';
 
 const { name, role, description } = (await getEntry('profile', 'profile'))!.data;
@@ -18,4 +19,5 @@ const { name, role, description } = (await getEntry('profile', 'profile'))!.data
     <Projects />
     <About />
   </main>
+  <SectionPill />
 </Base>

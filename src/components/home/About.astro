@@ -37,7 +37,7 @@ const host = (url: string) => new URL(url).hostname.replace(/^www\./, '');
 
   {
     questions.length > 0 && (
-      <div id="about-questions">
+      <div id="about-questions" data-entry>
         <h3 class="sub">Quick questions</h3>
         <dl class="qa">
           {questions.map((q) => (

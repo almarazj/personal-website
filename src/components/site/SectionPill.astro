@@ -1,0 +1,228 @@
+---
+/** Home only: names the section and entry being read, and opens a menu to jump to any of them. section-pill.ts fills it from the page. */
+---
+
+<div class="spill" hidden data-spill>
+  <button type="button" class="spill-button" aria-expanded="false" aria-controls="spill-menu" aria-label="On this page" data-spill-button>
+    <span class="spill-dot" aria-hidden="true"></span>
+    <span class="spill-section" data-spill-section></span>
+    <span class="spill-entry" data-spill-entry></span>
+    <svg class="spill-caret" viewBox="0 0 10 10" aria-hidden="true">
+      <path d="M2 6.5 5 3.5 8 6.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+    </svg>
+    <span class="spill-progress" aria-hidden="true" data-spill-progress></span>
+  </button>
+  <nav id="spill-menu" class="spill-menu" aria-label="On this page" hidden data-spill-menu>
+    <ul data-spill-list></ul>
+    <p class="spill-keys" aria-hidden="true">
+      <span><kbd>j</kbd> <kbd>k</kbd> next / prev</span>
+      <span><kbd>/</kbd> search</span>
+    </p>
+  </nav>
+</div>
+
+<style is:global>
+  .spill {
+    position: fixed;
+    left: 50%;
+    /* --lift rests it on the footer once the footer scrolls into view, so it never covers it. */
+    bottom: calc(16px + max(env(safe-area-inset-bottom), var(--lift, 0px)));
+    z-index: 20;
+    width: max-content;
+    max-width: calc(100vw - 32px);
+    translate: -50% 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity 0.2s,
+      translate 0.2s;
+  }
+  .spill[data-on] {
+    translate: -50% 0;
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .spill-button {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: min(520px, calc(100vw - 32px));
+    padding: 7px 14px 8px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--bg) 72%, transparent);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+    backdrop-filter: blur(14px) saturate(150%);
+    box-shadow: 0 10px 30px rgb(0 0 0 / 0.14);
+    color: var(--fg);
+    font: 400 13px/1.4 var(--font-sans);
+    cursor: pointer;
+  }
+  .spill-dot {
+    flex: none;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--sc);
+  }
+  .spill-section {
+    flex: none;
+    font: 500 12.5px/1.4 var(--font-mono);
+    color: var(--sc);
+    white-space: nowrap;
+  }
+  .spill-entry {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--muted);
+  }
+  .spill-entry:empty {
+    display: none;
+  }
+  .spill-entry::before {
+    content: '·';
+    margin-right: 8px;
+    color: var(--faint);
+  }
+  .spill-caret {
+    flex: none;
+    width: 10px;
+    height: 10px;
+    color: var(--faint);
+    transition: rotate 0.15s;
+  }
+  .spill-button[aria-expanded='true'] .spill-caret {
+    rotate: 180deg;
+  }
+  /* How far down the whole page the reader is. */
+  .spill-progress {
+    position: absolute;
+    inset: auto 0 0;
+    height: 2px;
+    background: var(--sc);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  .spill-menu {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 8px);
+    translate: -50% 0;
+    width: min(300px, calc(100vw - 32px));
+    padding: 6px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-panel);
+    background: var(--bg);
+    box-shadow: 0 24px 60px rgb(0 0 0 / 0.28);
+  }
+  .spill-menu[hidden] {
+    display: none;
+  }
+  .spill-menu ul {
+    display: grid;
+    gap: 1px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .spill-menu a {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px;
+    border-radius: var(--radius-control);
+    font-size: 14px;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .spill-menu a > span:first-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .spill-menu > ul > li > a > span:first-child::before {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 10px;
+    border-radius: 50%;
+    background: var(--sc);
+    vertical-align: 1px;
+  }
+  .spill-menu a:hover,
+  .spill-menu a:focus-visible {
+    background: var(--soft);
+    color: var(--fg);
+  }
+  .spill-menu a:focus-visible {
+    outline-offset: -2px;
+  }
+  .spill-menu a[data-current] {
+    color: var(--fg);
+    font-weight: 500;
+  }
+  .spill-count {
+    flex: none;
+    font: 400 11px/1 var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    color: var(--faint);
+  }
+  .spill-menu ul ul {
+    margin: 0 0 4px 13px;
+    padding-left: 10px;
+    border-left: 1px solid var(--sc);
+  }
+  .spill-menu ul ul[hidden] {
+    display: none;
+  }
+  .spill-menu ul ul a {
+    padding-block: 4px;
+    font-size: 13px;
+  }
+  .spill-menu ul ul a[data-current] {
+    color: var(--sc);
+    font-weight: 400;
+  }
+  .spill-keys {
+    display: flex;
+    gap: 12px;
+    margin: 4px 0 0;
+    padding: 6px 10px 2px;
+    border-top: 1px solid var(--line);
+    font: 400 11px/1.6 var(--font-mono);
+    color: var(--faint);
+  }
+  .spill-keys kbd {
+    padding: 0 4px;
+    border: 1px solid var(--line);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    font: inherit;
+  }
+  /* Touch screens have no keyboard to hint at. */
+  @media (hover: none) {
+    .spill-keys {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .spill-button {
+      background: var(--bg);
+    }
+  }
+</style>
+
+<script>
+  import { initSectionPill } from './section-pill';
+
+  const root = document.querySelector<HTMLElement>('[data-spill]');
+  const page = document.querySelector<HTMLElement>('main.page');
+  if (root && page) initSectionPill(root, page);
+</script>
