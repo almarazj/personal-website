@@ -10,4 +10,15 @@ export const commit: string | null = (() => {
   }
 })();
 
+/** The release tag the site is built from (CodeBuild names it in the webhook trigger), or the tag on HEAD; null when untagged. */
+export const tag: string | null = (() => {
+  const trigger = process.env.CODEBUILD_WEBHOOK_TRIGGER;
+  if (trigger?.startsWith('tag/')) return trigger.slice('tag/'.length);
+  try {
+    return execSync("git describe --tags --exact-match --match 'v*'", { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+  } catch {
+    return null;
+  }
+})();
+
 export const repoUrl = `https://github.com/${pkg.repository.replace(/^github:/, '')}`;

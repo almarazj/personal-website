@@ -1,6 +1,6 @@
 ---
 import { getEntry } from 'astro:content';
-import { commit as sha, repoUrl as repo } from '../../lib/build';
+import { commit as sha, repoUrl as repo, tag } from '../../lib/build';
 import { external } from '../../lib/links';
 
 const profile = await getEntry('profile', 'profile');
@@ -13,7 +13,14 @@ const { name, links } = profile!.data;
       {`© ${new Date().getFullYear()} ${name}`}
       {links.map(({ label, url }) => <> · <a href={url} {...external(url)}>{label}</a></>)}
     </p>
-    {sha && <a class="stamp" href={`${repo}/commit/${sha}`} {...external(repo)} title="Commit this page was built from">{sha.slice(0, 7)}</a>}
+    {
+      sha && (
+        <p class="stamp">
+          {tag && <a href={`${repo}/tree/${tag}`} {...external(repo)} title="Release this page was built from">{tag}</a>}
+          <a href={`${repo}/commit/${sha}`} {...external(repo)} title="Commit this page was built from">{sha.slice(0, 7)}</a>
+        </p>
+      )
+    }
   </div>
   <div class="row hints">
     <p class="keys" aria-hidden="true"><kbd>/</kbd> search <kbd>j</kbd> <kbd>k</kbd> sections <kbd>t</kbd> theme <kbd>g</kbd> <kbd>g</kbd> top</p>
@@ -49,12 +56,18 @@ const { name, links } = profile!.data;
     color: var(--fg);
   }
   .stamp {
-    padding: 2px 8px;
+    display: inline-flex;
     border: 1px solid var(--line);
     border-radius: var(--radius-control);
     font: 400 11.5px/1.4 var(--font-mono);
     font-variant-numeric: tabular-nums;
+  }
+  .stamp a {
+    padding: 2px 8px;
     text-decoration: none;
+  }
+  .stamp a + a {
+    border-left: 1px solid var(--line);
   }
   .hints {
     font: 400 12px/1.6 var(--font-mono);

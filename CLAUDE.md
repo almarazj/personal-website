@@ -18,7 +18,7 @@ A simple static site done well: no backend, no admin panel; content is edited in
 - Astro, static output only; interactive pieces are islands loaded with `client:visible`, so the rest ships zero JS.
 - Hosting: private S3 bucket behind CloudFront (Origin Access Control); a CloudFront Function maps directory paths to their `index.html`, and missing paths get `404.html`.
 - Infra: one CloudFormation stack, `infra/site.yml`.
-- Deploy: CodeBuild on every push to `main`, through a CodeConnections GitHub connection (IAM OIDC providers are blocked by the project SCPs).
+- Deploy: CodeBuild on every pushed `v*` tag (for example `v1.2.0`), through a CodeConnections GitHub connection (IAM OIDC providers are blocked by the project SCPs).
 - CI: GitHub Actions lints, runs the unit and E2E suites on every pull request, and lints the template with cfn-lint.
 
 ## Commands
@@ -40,5 +40,6 @@ A simple static site done well: no backend, no admin panel; content is edited in
 
 ## Git flow
 
-- `main` is always deployable; work happens on short-lived branches named `<type>/<slug>` (for example `feat/hero`) and merges through a pull request.
+- `main` is always deployable; a release is a semver `vX.Y.Z` tag on `main`, pushed by hand.
+- Work happens on short-lived branches named `<type>/<slug>` (for example `feat/hero`) and merges through a pull request.
 - One pull request per atomic change, with a green CI before merging.

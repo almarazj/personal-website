@@ -192,7 +192,7 @@ Shortcuts, ignored while typing in a field: `g e` experience, `g d` education, `
 ### Footer
 
 Two rows on the page frame, below a 1px `--line` rule and 72px after the content.
-Row 1: "© year name" and the profile links, separated by middle dots, on the left; on the right, the commit the page was built from as a mono stamp linking to it on GitHub.
+Row 1: "© year name" and the profile links, separated by middle dots, on the left; on the right, a mono stamp split in cells: the release tag the page was built from, when there is one, and its commit, each linking to it on GitHub.
 Row 2, in mono `--faint`: the keyboard shortcuts on the left (hidden on touch screens) and "↑ back to top" on the right.
 On phones each row wraps.
 ## Interaction rules
