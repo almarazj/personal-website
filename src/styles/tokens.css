@@ -34,6 +34,7 @@
   --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
   --font-serif: 'IBM Plex Serif', Georgia, 'Times New Roman', serif;
+  --font-hand: 'Nanum Pen Script', 'Segoe Print', 'Bradley Hand', cursive;
 
   --gutter-l: max(16px, env(safe-area-inset-left));
   --gutter-r: max(16px, env(safe-area-inset-right));

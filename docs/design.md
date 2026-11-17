@@ -150,7 +150,13 @@ The terminal lists each project under `projects/`, `open` goes to its page, and 
 
 ### About
 
-From `content/about.md`: the body is the bio, a 68ch paragraph; the frontmatter lists the photos and the quick questions.
+From `content/about.md`: the body is the bio, handwritten on a note; the frontmatter lists the photos and the quick questions.
+Right of the photos (below them on phones), the bio is a sheet of graph paper (`#fbfbf8`, `#e9e8e4` in dark mode like the polaroid frames) up to 520px wide, tilted -1deg, with a strip of tape and a shadow that follows the paper.
+It is written in black ink in Nanum Pen Script (`--font-hand`, 29px on a 34px line, a grid line under each), its link underlined and any `~~struck~~` words crossed out in the same ink, and signed with the profile's first name over a pen stroke.
+The note writes itself as the reader scrolls: the unwritten tail is painted transparent with a CSS highlight, so the text stays whole in the DOM, and the underline, the strike and the signature's stroke appear once the writing reaches them.
+- From 680px wide, the section pins 72px from the top while the reader scrolls through a 120vh track, arriving with the note blank and leaving with it written; any jump to `#about` (index, palette, `j`/`k`, terminal) lands at the track's end, note written.
+- On phones nothing pins: the note writes while it crosses the screen, finishing before its top reaches the upper quarter.
+- Under reduced motion, or where CSS highlights are unsupported, there is no track and the note is written from the start.
 Left of the bio (above it on phones), the photos as a stack of polaroids 400px wide (narrower on small phones), the first on top: drag the top one away (over 90px) to send it to the back, or tap it, press Enter or the arrow keys, or use "Next photo"; a counter shows "1 / n" and screen readers hear each new photo's caption and alt text.
 Photos are square, in `content/about/`, with any camera metadata (GPS) stripped before they are committed; the caption is two to four words and the alt text describes the place.
 Below it, "Quick questions" as rows separated by hairlines: the question in mono on the left (200px), the answer in Plex Serif 19px with a 20px stroke icon in its color, and a muted detail line with an optional link.
