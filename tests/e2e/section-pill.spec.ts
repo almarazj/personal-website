@@ -9,7 +9,7 @@ const scrollTo = (page: Page, id: string) =>
     document.getElementById(id)!.scrollIntoView();
   }, id);
 
-test('stays out of the way over the hero, then names the section and entry being read', async ({ page }) => {
+test('stays out of the way over the hero, then names the section being read', async ({ page }) => {
   await page.goto('/');
   await expect(pill(page)).not.toHaveAttribute('data-on');
   await expect(pill(page)).toHaveCSS('opacity', '0');
@@ -19,30 +19,31 @@ test('stays out of the way over the hero, then names the section and entry being
   const id = (await first.getAttribute('id'))!;
   await scrollTo(page, id);
   await expect(pill(page)).toHaveAttribute('data-on');
-  await expect(page.locator('[data-spill-section]')).toHaveText((await labels(page))[0]);
+  const label = (await labels(page))[0];
+  await expect(page.locator('[data-spill-section]')).toHaveText(label);
+  await expect(button(page)).toHaveAccessibleName(`On this page: ${label}`);
 
-  const entry = first.locator('[data-entry]').first();
-  await scrollTo(page, (await entry.getAttribute('id'))!);
-  await expect(page.locator('[data-spill-entry]')).toHaveText((await entry.locator('h3').textContent())!.trim());
-  await expect(button(page)).toHaveAccessibleName(/^On this page: /);
+  // Puts the reading line (30% down the space under the header) just inside the section's last entry, however tall it is.
+  await first.locator('[data-entry]').last().evaluate((el) => {
+    document.documentElement.style.scrollBehavior = 'auto';
+    window.scrollTo(0, el.getBoundingClientRect().top + scrollY - (56 + (innerHeight - 56) * 0.3) + 1);
+  });
+  await expect(page.locator('[data-spill-section]')).toHaveText(label);
 });
 
-test('its menu lists every section, opens the current one, and jumps', async ({ page }) => {
+test('its menu lists only the sections, marks the current one, and jumps', async ({ page }) => {
   await page.goto('/');
   const sections = page.locator('main.page > section.section');
-  const withEntries = sections.filter({ has: page.locator('[data-entry] ~ [data-entry]') }).first();
-  const id = (await withEntries.getAttribute('id'))!;
-  await scrollTo(page, id);
+  await scrollTo(page, (await sections.first().getAttribute('id'))!);
   await button(page).click();
   await expect(button(page)).toHaveAttribute('aria-expanded', 'true');
 
   const menu = page.getByRole('navigation', { name: 'On this page' });
-  const tops = menu.locator(':scope > ul > li > a');
-  await expect(tops).toHaveText((await labels(page)).map((l) => new RegExp(`^${l}`)));
-  await expect(menu.locator(`[data-spill-sub="${id}"]`)).toBeVisible();
-  await expect(menu.locator('[data-spill-sub]').filter({ visible: true })).toHaveCount(1);
+  await expect(menu.locator('a')).toHaveText((await labels(page)).map((l) => new RegExp(`^${l}`)));
+  await expect(menu.locator('a[data-current]')).toHaveCount(1);
+  await expect(menu.locator('a').first()).toHaveAttribute('data-current');
 
-  const last = withEntries.locator('[data-entry]').last();
+  const last = sections.last();
   const target = (await last.getAttribute('id'))!;
   await menu.locator(`a[href="#${target}"]`).click();
   await expect(page).toHaveURL(new RegExp(`#${target}$`));
