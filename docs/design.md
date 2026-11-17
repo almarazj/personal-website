@@ -83,6 +83,7 @@ Use `font-variant-numeric: tabular-nums` wherever digits line up.
 ### Header
 
 Sticky at the top of every page: the name, linking home, on the left, and the mode toggle on the right, both on the page frame's edges.
+The name ends in the favicon's cursor: a 9x3px `--accent` bar that blinks every 1.1s, still under reduced motion.
 Once the hero has scrolled under it, it gains a 1px `--line` bottom border.
 The toggle is a bare icon with no box that names what a click switches to: a moon in light mode, a sun in dark mode.
 Its bar is light glass: the page background at 72% over a 14px blur, reaching the viewport edges; solid under `prefers-reduced-transparency`.
