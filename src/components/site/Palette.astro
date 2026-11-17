@@ -1,5 +1,10 @@
 <dialog class="palette" aria-label="Search or jump to" aria-modal="true" data-palette>
   <div class="field">
+    <button type="button" class="back" aria-label="Close search" data-palette-close>
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M19 12H5M12 19l-7-7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+    </button>
     <input
       type="text"
       role="combobox"
@@ -42,8 +47,36 @@
     display: flex;
     flex-direction: column;
   }
+  /* The panel's own entrance and exit are driven by palette.ts; the backdrop only fades. */
   .palette::backdrop {
     background: rgb(20 21 24 / 0.45);
+    animation: palette-fade 220ms ease-out;
+  }
+  .palette[data-closing] {
+    pointer-events: none;
+  }
+  .palette[data-closing]::backdrop {
+    animation: palette-fade-out 200ms ease-in forwards;
+  }
+  @keyframes palette-fade {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes palette-fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+  /* The site-wide reduced-motion rule does not reach ::backdrop. */
+  @media (prefers-reduced-motion: reduce) {
+    .palette::backdrop {
+      animation: none !important;
+    }
+  }
+  /* Phones only: on desktop the field already says esc. */
+  .palette .back {
+    display: none;
   }
   .palette .field {
     flex: none;
@@ -168,14 +201,39 @@
     border-top: 1px solid var(--line);
   }
   @media (max-width: 680px) {
+    /* Anchored to the top, so the on-screen keyboard never covers the field; it keeps to the visible height, leaving backdrop to tap away. */
     .palette {
       width: 100%;
       max-width: none;
-      max-height: 85dvh;
-      margin: auto 0 0;
-      border-width: 1px 0 0;
-      border-radius: var(--radius-panel) var(--radius-panel) 0 0;
-      padding-bottom: env(safe-area-inset-bottom);
+      max-height: calc(var(--palette-room, 100dvh) - 48px);
+      margin: 0 0 auto;
+      border-width: 0 0 1px;
+      border-radius: 0 0 var(--radius-panel) var(--radius-panel);
+      padding-top: env(safe-area-inset-top);
+    }
+    .palette .field {
+      padding-left: 6px;
+      gap: 6px;
+    }
+    .palette .back {
+      flex: none;
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      color: var(--muted);
+      background: none;
+      border: 0;
+      border-radius: var(--radius-control);
+      cursor: pointer;
+    }
+    .palette .back svg {
+      width: 20px;
+      height: 20px;
+    }
+    .palette .back:active {
+      background: var(--soft);
     }
     .palette[open] .chips {
       display: flex;

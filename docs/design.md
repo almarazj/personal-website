@@ -168,7 +168,12 @@ It takes no width from the page, and it is the same on every screen size.
 
 Opens with `/` (the hint shown in the header field), `⌘K` or `Ctrl+K`, or the header's "Search or jump to..." field, centered between the name and the mode toggle (an icon button on phones).
 Desktop: a centered modal, results grouped (Sections, Experience, Projects, Education, About, Links, Actions) with a dot in the section color, each result showing its direct shortcut, and a cheat sheet at the bottom.
-Phone: a bottom sheet with group filter chips and tall rows.
+Phone: a sheet anchored to the top, so the on-screen keyboard never covers the field, with group filter chips and tall rows; it keeps to the visible height above the keyboard and leaves 48px of backdrop to tap away.
+On phones a back arrow left of the field closes it, returning focus to where it was.
+On phones it unrolls from the top edge like a blind (a `clip-path` over 280ms, `cubic-bezier(0.16, 1, 0.3, 1)`), then the field slides in 10px from the left, the chips drop in and the first results and their group labels cascade in 20ms apart; closing rolls it back up into the top edge over 200ms.
+On desktop it grows from 97% and drops 6px into place over 220ms, with the same cascade, and closing reverses that over 150ms.
+The backdrop fades in and out with it; the back arrow, Escape and a tap on the backdrop all animate the close, while a result that leaves the page closes at once.
+Motion drives it (Motion is small, 250ms or less per piece); under reduced motion it opens and closes at once.
 The index is `/search-index.json`, built from `content/` at build time and fetched on first open; only site paths, PDFs, https links and two actions are ever followed.
 Shortcuts, ignored while typing in a field: `g e` experience, `g d` education, `g p` projects, `g a` about, `j`/`k` next and previous section, `t` theme, `g g` top.
 

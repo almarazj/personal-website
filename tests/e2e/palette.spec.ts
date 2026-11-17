@@ -95,21 +95,69 @@ test('a failed index load keeps its error message', async ({ page }) => {
   await expect(page.getByText('Search is unavailable right now.')).toBeVisible();
 });
 
+// Animations running on the panel and inside it.
+const moving = (page: Page) => modal(page).evaluate((d) => d.getAnimations({ subtree: true }).filter((a) => a.playState === 'running').length);
+
+test('animates in and out, not under reduced motion, with no back arrow on desktop', async ({ page }) => {
+  await page.goto('/');
+  await page.keyboard.press('/');
+  expect(await moving(page)).toBeGreaterThan(0);
+  await expect(modal(page).getByRole('button', { name: 'Close search' })).toBeHidden();
+  await page.keyboard.press('Escape');
+  // Still on screen while it animates out, then gone.
+  await expect(modal(page)).toHaveAttribute('data-closing');
+  await expect(modal(page)).toBeHidden();
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.keyboard.press('/');
+  await expect(modal(page)).toBeVisible();
+  expect(await moving(page)).toBe(0);
+  await page.keyboard.press('Escape');
+  await expect(modal(page)).toBeHidden();
+});
+
 test.describe('phone', () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
-  test('opens a bottom sheet with filter chips', async ({ page }) => {
+  test('opens a sheet anchored to the top, with filter chips', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Search or jump to' }).click();
     const sheet = modal(page);
     await expect(sheet).toBeVisible();
+    await sheet.evaluate((d) => Promise.all(d.getAnimations({ subtree: true }).map((a) => a.finished)));
     const box = (await sheet.boundingBox())!;
-    expect(box.y + box.height).toBeCloseTo(844, 0);
+    expect(box.y).toBe(0);
+    expect(box.y + box.height).toBeLessThanOrEqual(844 - 48);
     expect(box.width).toBe(390);
     const chips = sheet.getByRole('group', { name: 'Filter by group' });
     await chips.getByRole('button', { name: 'Projects' }).click();
     await expect(chips.getByRole('button', { name: 'Projects' })).toHaveAttribute('aria-pressed', 'true');
     const groups = await sheet.locator('.group-label').allTextContents();
     expect(groups).toEqual(['Projects']);
+  });
+
+  test('a back arrow left of the field closes it and returns focus', async ({ page }) => {
+    await page.goto('/');
+    const trigger = page.getByRole('button', { name: 'Search or jump to' });
+    await trigger.click();
+    const sheet = modal(page);
+    const back = sheet.getByRole('button', { name: 'Close search' });
+    const [arrow, field] = [(await back.boundingBox())!, (await sheet.getByRole('combobox').boundingBox())!];
+    expect(arrow.x + arrow.width).toBeLessThanOrEqual(field.x);
+    await back.click();
+    await expect(sheet).toHaveAttribute('data-closing');
+    await expect(sheet).toBeHidden();
+    await expect(trigger).toBeFocused();
+  });
+
+  test('keeps to the space left above the on-screen keyboard', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Search or jump to' }).click();
+    const sheet = modal(page);
+    await expect(sheet.getByRole('combobox')).toBeFocused();
+    // A shorter viewport stands in for the keyboard: both shrink the visual viewport.
+    await page.setViewportSize({ width: 390, height: 420 });
+    await expect.poll(async () => (await sheet.boundingBox())!.height).toBeLessThanOrEqual(420 - 48);
+    await expect(sheet.getByRole('combobox')).toBeInViewport();
   });
 });

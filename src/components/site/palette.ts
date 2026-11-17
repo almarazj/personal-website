@@ -1,3 +1,4 @@
+import { animate } from 'motion';
 import { opensNewTab } from '../../lib/links';
 import { createShortcuts } from './shortcuts';
 import { toggleTheme } from './theme';
@@ -130,21 +131,64 @@ export function initPalette(dialog: HTMLDialogElement) {
     render();
   }
 
+  // The on-screen keyboard shrinks the visual viewport but not dvh; on phones the sheet keeps to what is visible.
+  const fit = () => dialog.style.setProperty('--palette-room', `${visualViewport?.height ?? innerHeight}px`);
+  visualViewport?.addEventListener('resize', fit);
+
+  const still = matchMedia('(prefers-reduced-motion: reduce)');
+  const phone = matchMedia('(max-width: 680px)');
+  const EASE_OUT = [0.16, 1, 0.3, 1] as const;
+  const EASE_IN = [0.4, 0, 1, 1] as const;
+  // On phones the sheet unrolls from the top edge like a blind, and rolls back up into it.
+  const ROLLED = 'inset(0% 0% 100% 0% round 0 0 12px 12px)';
+  const UNROLLED = 'inset(0% 0% 0% 0% round 0 0 12px 12px)';
+  const LEFT_BY_MOTION = ['clip-path', 'opacity', 'transform', 'translate', 'scale'];
+
+  function enter() {
+    if (still.matches) return;
+    const field = dialog.querySelector<HTMLElement>('.field')!;
+    // Everything on screen cascades in reading order, group labels with their rows; the delay is capped so long lists stay quick.
+    const rows = [...list.querySelectorAll<HTMLElement>('.group-label, [role="option"]')].filter((r) => r.offsetTop - list.offsetTop < list.clientHeight);
+    if (phone.matches) {
+      animate(dialog, { clipPath: [ROLLED, UNROLLED] }, { duration: 0.28, ease: EASE_OUT });
+      animate(field, { opacity: [0, 1], x: [-10, 0] }, { duration: 0.24, delay: 0.06, ease: EASE_OUT });
+      animate(chips, { opacity: [0, 1], y: [-4, 0] }, { duration: 0.2, delay: 0.1, ease: EASE_OUT });
+    } else {
+      animate(dialog, { opacity: [0, 1], scale: [0.97, 1], y: [-6, 0] }, { duration: 0.22, ease: EASE_OUT });
+    }
+    if (rows.length) animate(rows, { opacity: [0, 1], y: [-6, 0] }, { duration: 0.2, delay: (i: number) => 0.08 + Math.min(i * 0.02, 0.16), ease: EASE_OUT });
+  }
+
   function open(from?: HTMLElement | null) {
     if (dialog.open) return;
     opener = from ?? (document.activeElement as HTMLElement | null);
     input.value = '';
     filter = null;
     active = 0;
+    fit();
     dialog.showModal();
     input.focus();
     renderChips();
     render();
+    enter();
     void load();
   }
 
-  function close(restoreFocus = true) {
+  let closing = false;
+  // `instant` skips the exit when the page is about to be left anyway.
+  async function close(restoreFocus = true, instant = false) {
+    if (!dialog.open || closing) return;
+    if (!instant && !still.matches) {
+      closing = true;
+      dialog.dataset.closing = '';
+      await (phone.matches
+        ? animate(dialog, { clipPath: [UNROLLED, ROLLED] }, { duration: 0.2, ease: EASE_IN })
+        : animate(dialog, { opacity: 0, scale: 0.97, y: -6 }, { duration: 0.15, ease: EASE_IN }));
+      delete dialog.dataset.closing;
+      closing = false;
+    }
     dialog.close();
+    for (const prop of LEFT_BY_MOTION) dialog.style.removeProperty(prop);
     if (restoreFocus) opener?.focus({ preventScroll: true });
   }
 
@@ -157,7 +201,8 @@ export function initPalette(dialog: HTMLDialogElement) {
     const known =
       t === 'action:theme' || t === 'action:top' || t.startsWith('https://') || (t.startsWith('/') && !t.startsWith('//'));
     if (!known) return; // the index is fetched data: never hand an unknown scheme to the browser
-    close(t.startsWith('action:'));
+    const action = t.startsWith('action:');
+    close(action, !action && !opensNewTab(t));
     if (t === 'action:theme') toggleTheme();
     else if (t === 'action:top') scrollToTop();
     else if (opensNewTab(t)) window.open(t, '_blank', 'noopener');
@@ -179,6 +224,7 @@ export function initPalette(dialog: HTMLDialogElement) {
     close();
   });
   dialog.addEventListener('click', (e) => e.target === dialog && close());
+  dialog.querySelector('[data-palette-close]')?.addEventListener('click', () => close());
   input.addEventListener('input', () => {
     active = 0;
     render();
